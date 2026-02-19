@@ -34,7 +34,7 @@ export default function Dashboard() {
                 setStatusMsg('Verifying GitHub Credentials...');
 
                 try {
-                    const response = await fetch('http://localhost:8000/auth/github', {
+                    const response = await fetch('https://gitfixai.onrender.com/auth/github', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ code })
