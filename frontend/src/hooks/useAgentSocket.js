@@ -14,7 +14,7 @@ export function useAgentSocket() {
     const connect = useCallback(() => {
         if (ws.current?.readyState === WebSocket.OPEN) return;
 
-        ws.current = new WebSocket('ws://localhost:8000/ws');
+        ws.current = new WebSocket('wss://gitfixai.onrender.com/ws');
 
         ws.current.onopen = () => {
             console.log('Agent WebSocket connected');

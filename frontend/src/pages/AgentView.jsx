@@ -178,7 +178,7 @@ export default function AgentView() {
         setStarted(true);
 
         clearAll();
-        fetch('http://localhost:8000/analyze', {
+        fetch('https://gitfixai.onrender.com/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
