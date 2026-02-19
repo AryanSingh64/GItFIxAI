@@ -154,7 +154,7 @@ async def run_analysis_task(repo_url: str, team_name: str, leader_name: str, acc
     finally:
         _running_tasks.discard(task_key)
 
-async def _run_analysis(repo_url: str, team_name: str, leader_name: str, access_token: str = None):
+async def _run_analysis(repo_url: str, team_name: str, leader_name: str, access_token: str = None):  # noqa
     start_time = time.time()
     repo_name = repo_url.split("/")[-1].replace(".git", "")
     local_path = os.path.abspath(f"./temp_repos/{repo_name}")
