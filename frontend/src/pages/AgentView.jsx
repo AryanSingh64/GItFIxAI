@@ -178,7 +178,8 @@ export default function AgentView() {
         setStarted(true);
 
         clearAll();
-        fetch('https://gitfixai-1.onrender.com/analyze', {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        fetch(`${API_URL}/analyze`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
