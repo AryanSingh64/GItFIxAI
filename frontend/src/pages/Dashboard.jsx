@@ -85,6 +85,7 @@ export default function Dashboard() {
 
     const startAnalysis = () => {
         if (!repoUrl) return alert("Please select a repository or enter a URL!");
+        if (!repoUrl.includes('github.com')) return alert("Please enter a valid GitHub repository URL!");
         navigate('/agent', { state: { repoUrl, teamName, leaderName, accessToken: localStorage.getItem('access_token') } });
     };
 

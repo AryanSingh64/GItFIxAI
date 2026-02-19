@@ -1,7 +1,6 @@
 import os
 import re
 
-# Try to import OpenAI for AI-powered fixing
 try:
     from openai import OpenAI
     HAS_OPENAI = True
@@ -26,7 +25,7 @@ def get_ai_client():
 
 
 def fix_issue(repo_path: str, issue: dict):
-    """Fix an issue — tries AI first, falls back to heuristics."""
+    """Fix an issue — tries AI first, falls back to heuristics. Returns before/after."""
     client, model = get_ai_client()
     if client:
         try:
@@ -42,15 +41,25 @@ def fix_issue(repo_path: str, issue: dict):
     return _heuristic_fix_python(repo_path, issue)
 
 
+def _read_file(path):
+    with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+        return f.readlines()
+
+
+def _write_file(path, lines):
+    with open(path, 'w', encoding='utf-8') as f:
+        f.writelines(lines)
+
+
 def _ai_fix(client, model, repo_path: str, issue: dict):
-    """Use AI to generate a fix for the issue."""
     file_full_path = os.path.join(repo_path, issue['file'])
-    with open(file_full_path, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
+    lines = _read_file(file_full_path)
 
     line_idx = issue['line'] - 1
     if line_idx < 0 or line_idx >= len(lines):
         return {"status": "failed", "error": "Line out of bounds"}
+
+    before_line = lines[line_idx].rstrip('\n')
 
     start = max(0, line_idx - 5)
     end = min(len(lines), line_idx + 6)
@@ -85,22 +94,21 @@ def _ai_fix(client, model, repo_path: str, issue: dict):
     if not fixed_line.endswith('\n'):
         fixed_line += '\n'
     lines[line_idx] = fixed_line
+    after_line = fixed_line.rstrip('\n')
 
-    with open(file_full_path, 'w', encoding='utf-8') as f:
-        f.writelines(lines)
-    return {"status": "fixed", "method": "ai"}
+    _write_file(file_full_path, lines)
+    return {"status": "fixed", "method": "ai", "before": before_line, "after": after_line}
 
 
 def _heuristic_fix_python(repo_path: str, issue: dict):
-    """Heuristic fixes for Python issues."""
     file_full_path = os.path.join(repo_path, issue['file'])
     try:
-        with open(file_full_path, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
+        lines = _read_file(file_full_path)
         line_idx = issue['line'] - 1
         if line_idx < 0 or line_idx >= len(lines):
             return {"status": "failed", "error": "Line out of bounds"}
 
+        before_line = lines[line_idx].rstrip('\n')
         msg = issue['message'].lower()
         raw = issue.get('raw', '')
 
@@ -124,23 +132,22 @@ def _heuristic_fix_python(repo_path: str, issue: dict):
         else:
             return {"status": "failed", "error": "No heuristic available"}
 
-        with open(file_full_path, 'w', encoding='utf-8') as f:
-            f.writelines(lines)
-        return {"status": "fixed", "method": "heuristic"}
+        after_line = lines[line_idx].rstrip('\n')
+        _write_file(file_full_path, lines)
+        return {"status": "fixed", "method": "heuristic", "before": before_line, "after": after_line}
     except Exception as e:
         return {"status": "failed", "error": str(e)}
 
 
 def _heuristic_fix_javascript(repo_path: str, issue: dict):
-    """Heuristic fixes for JavaScript issues."""
     file_full_path = os.path.join(repo_path, issue['file'])
     try:
-        with open(file_full_path, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
+        lines = _read_file(file_full_path)
         line_idx = issue['line'] - 1
         if line_idx < 0 or line_idx >= len(lines):
             return {"status": "failed", "error": "Line out of bounds"}
 
+        before_line = lines[line_idx].rstrip('\n')
         msg = issue['message'].lower()
         original = lines[line_idx]
 
@@ -162,8 +169,8 @@ def _heuristic_fix_javascript(repo_path: str, issue: dict):
             indent = len(original) - len(original.lstrip())
             lines[line_idx] = ' ' * indent + '// [AI-AGENT] ' + original.lstrip()
 
-        with open(file_full_path, 'w', encoding='utf-8') as f:
-            f.writelines(lines)
-        return {"status": "fixed", "method": "heuristic"}
+        after_line = lines[line_idx].rstrip('\n')
+        _write_file(file_full_path, lines)
+        return {"status": "fixed", "method": "heuristic", "before": before_line, "after": after_line}
     except Exception as e:
         return {"status": "failed", "error": str(e)}

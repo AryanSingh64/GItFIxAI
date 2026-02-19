@@ -1,50 +1,74 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 export function useAgentSocket() {
-    const [messages, setMessages] = useState([]);
-    const [status, setStatus] = useState('IDLE');
+    const [logs, setLogs] = useState([]);
+    const [stages, setStages] = useState({});
+    const [diffs, setDiffs] = useState([]);
+    const [result, setResult] = useState(null);
+    const [prUrl, setPrUrl] = useState(null);
+
     const ws = useRef(null);
     const mounted = useRef(false);
+    const reconnectTimer = useRef(null);
 
-    useEffect(() => {
-        // Prevent double connection from React StrictMode
-        if (mounted.current) return;
-        mounted.current = true;
+    const connect = useCallback(() => {
+        if (ws.current?.readyState === WebSocket.OPEN) return;
 
-        const connect = () => {
-            ws.current = new WebSocket('ws://localhost:8000/ws');
+        ws.current = new WebSocket('ws://localhost:8000/ws');
 
-            ws.current.onopen = () => {
-                console.log('Connected to Agent WebSocket');
-            };
-
-            ws.current.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                setMessages((prev) => [...prev, data]);
-
-                if (data.type === 'STATUS') {
-                    setStatus(data.status);
-                }
-            };
-
-            ws.current.onclose = () => {
-                console.log('Disconnected from Agent WebSocket');
-            };
-
-            ws.current.onerror = () => {
-                // Silently handle connection errors
-            };
+        ws.current.onopen = () => {
+            console.log('Agent WebSocket connected');
         };
 
+        ws.current.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+
+                if (data.type === 'STAGE') {
+                    setStages(prev => ({ ...prev, [data.stage]: data.status }));
+                } else if (data.type === 'DIFF') {
+                    setDiffs(prev => [...prev, data]);
+                } else if (data.type === 'RESULT') {
+                    setResult(data);
+                } else if (data.type === 'PR') {
+                    setPrUrl(data.url);
+                } else {
+                    setLogs(prev => [...prev, data]);
+                }
+            } catch (e) {
+                // ignore parse errors
+            }
+        };
+
+        ws.current.onclose = () => {
+            // Auto-reconnect after 2 seconds
+            if (mounted.current) {
+                reconnectTimer.current = setTimeout(connect, 2000);
+            }
+        };
+
+        ws.current.onerror = () => { };
+    }, []);
+
+    useEffect(() => {
+        if (mounted.current) return;
+        mounted.current = true;
         connect();
 
         return () => {
             mounted.current = false;
+            clearTimeout(reconnectTimer.current);
             ws.current?.close();
         };
+    }, [connect]);
+
+    const clearAll = useCallback(() => {
+        setLogs([]);
+        setStages({});
+        setDiffs([]);
+        setResult(null);
+        setPrUrl(null);
     }, []);
 
-    const clearMessages = useCallback(() => setMessages([]), []);
-
-    return { messages, status, clearMessages };
+    return { logs, stages, diffs, result, prUrl, clearAll };
 }
