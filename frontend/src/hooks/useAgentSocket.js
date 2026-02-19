@@ -15,7 +15,7 @@ export function useAgentSocket() {
             ws.current = new WebSocket('ws://localhost:8000/ws');
 
             ws.current.onopen = () => {
-                console.log('Connected to Agent WebSocket');
+                // console.log('Connected to Agent WebSocket');
             };
 
             ws.current.onmessage = (event) => {
