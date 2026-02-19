@@ -93,7 +93,7 @@ async def scan_javascript(repo_path: str, log_callback=None):
                             continue
                         if 'console.log(' in stripped:
                             issues.append({"file": rel_path, "type": "LINTING", "line": i,
-                                "message": "console.log() found — remove for production",
+                                "message": "console.log() found — remove for production",  # noqa
                                 "raw": "console-log", "language": "javascript", "agent": "JS Agent"})
                         if re.match(r'^var\s+', stripped):
                             issues.append({"file": rel_path, "type": "LINTING", "line": i,
