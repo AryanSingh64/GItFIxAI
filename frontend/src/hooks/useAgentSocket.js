@@ -19,7 +19,7 @@ export function useAgentSocket() {
         if (ws.current?.readyState === WebSocket.OPEN) return;
         if (retryCount.current >= maxRetries.current) return;
 
-        ws.current = new WebSocket('wss://gitfixai.onrender.com/ws');
+        ws.current = new WebSocket('wss://gitfixai-1.onrender.com/ws');
 
         ws.current.onopen = () => {
             console.log('Agent WebSocket connected');

@@ -27,19 +27,19 @@ function PipelineProgress({ stages }) {
                         <React.Fragment key={stage.key}>
                             <div className="flex flex-col items-center gap-2 flex-shrink-0">
                                 <div className={`w-11 h-11 rounded-full flex items-center justify-center border-2 transition-all duration-500 ${status === 'done' ? 'border-emerald-400 bg-emerald-400/20 shadow-lg shadow-emerald-400/20' :
-                                        status === 'active' ? 'border-violet-400 bg-violet-400/20 animate-pulse shadow-lg shadow-violet-400/20' :
-                                            status === 'error' ? 'border-red-400 bg-red-400/20' :
-                                                'border-white/10 bg-white/5'
+                                    status === 'active' ? 'border-violet-400 bg-violet-400/20 animate-pulse shadow-lg shadow-violet-400/20' :
+                                        status === 'error' ? 'border-red-400 bg-red-400/20' :
+                                            'border-white/10 bg-white/5'
                                     }`}>
                                     <Icon className={`w-5 h-5 ${status === 'done' ? 'text-emerald-400' :
-                                            status === 'active' ? 'text-violet-400' :
-                                                status === 'error' ? 'text-red-400' :
-                                                    'text-white/20'
+                                        status === 'active' ? 'text-violet-400' :
+                                            status === 'error' ? 'text-red-400' :
+                                                'text-white/20'
                                         }`} />
                                 </div>
                                 <span className={`text-xs font-medium ${status === 'done' ? 'text-emerald-400' :
-                                        status === 'active' ? 'text-violet-400' :
-                                            'text-white/30'
+                                    status === 'active' ? 'text-violet-400' :
+                                        'text-white/30'
                                     }`}>{stage.label}</span>
                             </div>
                             {i < PIPELINE.length - 1 && (
@@ -178,7 +178,7 @@ export default function AgentView() {
         setStarted(true);
 
         clearAll();
-        fetch('https://gitfixai.onrender.com/analyze', {
+        fetch('https://gitfixai-1.onrender.com/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -287,8 +287,8 @@ export default function AgentView() {
                                             <td className="py-2 pr-4 font-mono text-xs text-violet-300">{fix.file}</td>
                                             <td className="py-2 pr-4">
                                                 <span className={`text-xs px-2 py-0.5 rounded-full ${fix.type === 'SECURITY' ? 'bg-red-500/20 text-red-300' :
-                                                        fix.type === 'LOGIC' ? 'bg-amber-500/20 text-amber-300' :
-                                                            'bg-blue-500/20 text-blue-300'
+                                                    fix.type === 'LOGIC' ? 'bg-amber-500/20 text-amber-300' :
+                                                        'bg-blue-500/20 text-blue-300'
                                                     }`}>{fix.type}</span>
                                             </td>
                                             <td className="py-2 pr-4 text-white/40">L{fix.line}</td>
