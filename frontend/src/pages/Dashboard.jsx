@@ -34,7 +34,14 @@ export default function Dashboard() {
                 setStatusMsg('Verifying GitHub Credentials...');
 
                 try {
-                    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                    let API_URL = import.meta.env.VITE_API_URL;
+                    // If we are NOT on localhost, but API_URL is localhost (or missing), FORCE Render URL
+                    if (window.location.hostname !== 'localhost' && (!API_URL || API_URL.includes('localhost'))) {
+                        API_URL = 'https://gitfixai.onrender.com';
+                    } else if (!API_URL) {
+                        API_URL = 'http://localhost:8000';
+                    }
+
                     const response = await fetch(`${API_URL}/auth/github`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

@@ -19,10 +19,18 @@ export function useAgentSocket() {
         if (ws.current?.readyState === WebSocket.OPEN) return;
         if (retryCount.current >= maxRetries.current) return;
 
-        // Dynamic URL based on environment variable - platform agnostic
-        const validApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-        const wsProtocol = validApiUrl.startsWith('https') ? 'wss' : 'ws';
-        const wsUrl = validApiUrl.replace(/^http(s)?/, wsProtocol) + '/ws';
+        // Dynamic URL Logic - FAILSAFE FOR PRODUCTION
+        let apiUrl = import.meta.env.VITE_API_URL;
+
+        // If on production (not localhost) but env var is missing or points to localhost, FORCE production backend
+        if (window.location.hostname !== 'localhost' && (!apiUrl || apiUrl.includes('localhost'))) {
+            apiUrl = 'https://gitfixai.onrender.com';
+        } else {
+            apiUrl = apiUrl || 'http://localhost:8000';
+        }
+
+        const wsProtocol = apiUrl.startsWith('https') ? 'wss' : 'ws';
+        const wsUrl = apiUrl.replace(/^http(s)?/, wsProtocol) + '/ws';
 
         ws.current = new WebSocket(wsUrl);
 
