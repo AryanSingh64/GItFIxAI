@@ -80,7 +80,7 @@ async def scan_javascript(repo_path: str, log_callback=None):
             for filename in files:
                 if not filename.endswith(('.js', '.jsx', '.ts', '.tsx')):
                     continue
-                if filename.endswith(('.min.js', '.bundle.js', '.config.js', '.config.ts', '.config.cjs', '.config.mjs')):
+                if filename.endswith(('.min.js', '.bundle.js', '.config.js', '.config.ts', '.config.cjs', '.config.mjs')):  # noqa: E501
                     continue
                 filepath = os.path.join(root, filename)
                 rel_path = os.path.relpath(filepath, repo_path).replace('\\', '/')
