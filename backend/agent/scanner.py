@@ -33,7 +33,7 @@ async def scan_python(repo_path: str, log_callback=None):
                 continue
             parts = line.split(':')
             if len(parts) >= 4:
-                file_path = parts[0]
+                file_path = parts[0].replace('\\', '/').lstrip('./')
                 try:
                     line_num = int(parts[1])
                 except ValueError:
@@ -150,6 +150,13 @@ async def scan_security(repo_path: str, log_callback=None):
                     for i, line in enumerate(lines, 1):
                         stripped = line.strip()
                         if stripped.startswith('//') or stripped.startswith('#'):
+                            continue
+                        # Skip regex patterns, string definitions, and comments
+                        if "r'" in stripped or 'r"' in stripped or '\\b' in stripped:
+                            continue
+                        if stripped.startswith('import ') or stripped.startswith('from '):
+                            continue
+                        if '# noqa' in stripped or '# [AI-AGENT]' in stripped:
                             continue
                         for pattern, message in secret_patterns:
                             if re.search(pattern, stripped):

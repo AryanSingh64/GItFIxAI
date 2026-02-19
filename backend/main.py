@@ -139,17 +139,41 @@ async def github_auth(payload: OAuthCode):
 
 # --- Agent Logic ---
 
+# Dedup lock to prevent double runs from React StrictMode
+_running_tasks = set()
+
 async def run_analysis_task(repo_url: str, team_name: str, leader_name: str, access_token: str = None):
+    # Prevent duplicate runs
+    task_key = f"{repo_url}_{team_name}"
+    if task_key in _running_tasks:
+        return
+    _running_tasks.add(task_key)
+
+    try:
+        await _run_analysis(repo_url, team_name, leader_name, access_token)
+    finally:
+        _running_tasks.discard(task_key)
+
+async def _run_analysis(repo_url: str, team_name: str, leader_name: str, access_token: str = None):
     start_time = time.time()
     repo_name = repo_url.split("/")[-1].replace(".git", "")
     local_path = os.path.abspath(f"./temp_repos/{repo_name}")
 
-    # 1. Cleanup & Clone
+    # 1. Cleanup — robust Windows-compatible removal
     if os.path.exists(local_path):
         try:
-            shutil.rmtree(local_path)
+            # On Windows, git files can be read-only; force remove
+            import subprocess as sp
+            sp.run(['cmd', '/c', 'rmdir', '/s', '/q', local_path],
+                   capture_output=True, timeout=15)
         except Exception:
             pass
+        # Double-check
+        if os.path.exists(local_path):
+            try:
+                shutil.rmtree(local_path, ignore_errors=True)
+            except Exception:
+                pass
 
     await send_log(f"[📦 Clone Agent] Cloning repository: {repo_url}...", "INFO")
     try:

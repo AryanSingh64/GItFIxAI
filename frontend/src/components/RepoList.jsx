@@ -6,9 +6,9 @@ export default function RepoList({ repos, onSelect }) {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            {repos.map((repo) => (
+            {repos.map((repo, index) => (
                 <div
-                    key={repo.name}
+                    key={`${repo.full_name || repo.name}-${index}`}
                     className="bg-surface p-5 rounded-xl border border-white/5 hover:border-primary/50 transition-all cursor-pointer group hover:shadow-lg hover:shadow-primary/10"
                     onClick={() => onSelect(repo.url)}
                 >

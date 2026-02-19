@@ -1,37 +1,50 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 export function useAgentSocket() {
     const [messages, setMessages] = useState([]);
     const [status, setStatus] = useState('IDLE');
     const ws = useRef(null);
+    const mounted = useRef(false);
 
     useEffect(() => {
-        // Connect to WebSocket on Mount
-        ws.current = new WebSocket('ws://localhost:8000/ws');
+        // Prevent double connection from React StrictMode
+        if (mounted.current) return;
+        mounted.current = true;
 
-        ws.current.onopen = () => {
-            console.log('Connected to Agent WebSocket');
+        const connect = () => {
+            ws.current = new WebSocket('ws://localhost:8000/ws');
+
+            ws.current.onopen = () => {
+                console.log('Connected to Agent WebSocket');
+            };
+
+            ws.current.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                setMessages((prev) => [...prev, data]);
+
+                if (data.type === 'STATUS') {
+                    setStatus(data.status);
+                }
+            };
+
+            ws.current.onclose = () => {
+                console.log('Disconnected from Agent WebSocket');
+            };
+
+            ws.current.onerror = () => {
+                // Silently handle connection errors
+            };
         };
 
-        ws.current.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            setMessages((prev) => [...prev, data]);
-
-            if (data.type === 'STATUS') {
-                setStatus(data.status);
-            }
-        };
-
-        ws.current.onclose = () => {
-            console.log('Disconnected from Agent WebSocket');
-        };
+        connect();
 
         return () => {
+            mounted.current = false;
             ws.current?.close();
         };
     }, []);
 
-    const clearMessages = () => setMessages([]);
+    const clearMessages = useCallback(() => setMessages([]), []);
 
     return { messages, status, clearMessages };
 }
