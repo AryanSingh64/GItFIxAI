@@ -85,7 +85,7 @@ export default function Dashboard() {
 
     const startAnalysis = () => {
         if (!repoUrl) return alert("Please select a repository or enter a URL!");
-        navigate('/agent', { state: { repoUrl, teamName, leaderName } });
+        navigate('/agent', { state: { repoUrl, teamName, leaderName, accessToken: localStorage.getItem('access_token') } });
     };
 
     return (

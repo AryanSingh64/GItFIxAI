@@ -13,7 +13,7 @@ import AgentLogs from '../components/AgentLogs';
 export default function AgentView() {
     const location = useLocation();
     const navigate = useNavigate();
-    const { repoUrl, teamName, leaderName } = location.state || {};
+    const { repoUrl, teamName, leaderName, accessToken } = location.state || {};
 
     const [loading, setLoading] = useState(true);
     const [analysisData, setAnalysisData] = useState(null);
@@ -31,7 +31,7 @@ export default function AgentView() {
                 const response = await fetch('http://localhost:8000/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ repo_url: repoUrl, team_name: teamName, leader_name: leaderName })
+                    body: JSON.stringify({ repo_url: repoUrl, team_name: teamName, leader_name: leaderName, access_token: accessToken })
                 });
                 if (!response.ok) throw new Error('Failed');
             } catch (e) {

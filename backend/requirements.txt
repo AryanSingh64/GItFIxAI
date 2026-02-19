@@ -3,9 +3,7 @@ uvicorn
 pydantic
 gitpython
 pytest
-langgraph
-langchain
-langchain-openai
 python-dotenv
 httpx
 flake8
+openai
