@@ -11,13 +11,20 @@ export function useAgentSocket() {
     const mounted = useRef(false);
     const reconnectTimer = useRef(null);
 
+    const retryDelay = useRef(2000);
+    const maxRetries = useRef(10);
+    const retryCount = useRef(0);
+
     const connect = useCallback(() => {
         if (ws.current?.readyState === WebSocket.OPEN) return;
+        if (retryCount.current >= maxRetries.current) return;
 
         ws.current = new WebSocket('wss://gitfixai.onrender.com/ws');
 
         ws.current.onopen = () => {
             console.log('Agent WebSocket connected');
+            retryDelay.current = 2000; // Reset backoff on success
+            retryCount.current = 0;
         };
 
         ws.current.onmessage = (event) => {
@@ -41,9 +48,10 @@ export function useAgentSocket() {
         };
 
         ws.current.onclose = () => {
-            // Auto-reconnect after 2 seconds
             if (mounted.current) {
-                reconnectTimer.current = setTimeout(connect, 2000);
+                retryCount.current += 1;
+                reconnectTimer.current = setTimeout(connect, retryDelay.current);
+                retryDelay.current = Math.min(retryDelay.current * 1.5, 30000); // Backoff up to 30s
             }
         };
 
