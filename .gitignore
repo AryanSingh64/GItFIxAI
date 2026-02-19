@@ -1,0 +1,5 @@
+backend/temp_repos/
+node_modules/
+.env
+__pycache__/
+*.pyc

@@ -13,7 +13,7 @@ from agent.git_manager import clone_repo, create_branch, commit_changes, push_ch
 
 app = FastAPI(title="Autonomous CI/CD Healing Agent")
 
-# OAuth Config (USER PROVIDED)
+# OAuth Config
 GITHUB_CLIENT_ID = "Ov23liktz8bz4X5bMsds"
 GITHUB_CLIENT_SECRET = "68338bd517c750c9f9b599a060a2d95c7c1cd72d"
 
@@ -34,7 +34,7 @@ class AnalyzeRequest(BaseModel):
 class OAuthCode(BaseModel):
     code: str
 
-# WebSocket Manager (Same as before)
+# WebSocket Manager
 class ConnectionManager:
     def __init__(self):
         self.active_connections: list[WebSocket] = []
@@ -48,7 +48,10 @@ class ConnectionManager:
 
     async def broadcast(self, message: str):
         for connection in self.active_connections:
-            await connection.send_text(message)
+             try:
+                await connection.send_text(message)
+             except Exception:
+                pass # Handle stale connections
 
 manager = ConnectionManager()
 
@@ -78,8 +81,8 @@ async def github_auth(payload: OAuthCode):
         response = await client.post(
             "https://github.com/login/oauth/access_token",
             json={
-                "client_id": GITHUB_CLIENT_ID,
-                "client_secret": GITHUB_CLIENT_SECRET,
+                "client_id": "Ov23liMwKc65dOyh7pna",
+                "client_secret": "8fd5d4f117978a48d44406bf6e54bd5420b26f25",
                 "code": payload.code
             },
             headers={"Accept": "application/json"}
@@ -87,13 +90,15 @@ async def github_auth(payload: OAuthCode):
         data = response.json()
         
         if "error" in data:
-            raise HTTPException(status_code=400, detail=data["error_description"])
+            raise HTTPException(status_code=400, detail=data.get("error_description", "Auth Error"))
             
-        access_token = data["access_token"]
+        access_token = data.get("access_token")
+        if not access_token:
+             raise HTTPException(status_code=400, detail="No access token returned")
         
-        # Get User Repos (Wait for Github API)
+        # Get User Repos
         repos_response = await client.get(
-            "https://api.github.com/user/repos?sort=updated&per_page=10",
+            "https://api.github.com/user/repos?sort=updated&per_page=100",
             headers={
                 "Authorization": f"Bearer {access_token}",
                 "Accept": "application/vnd.github.v3+json"
@@ -106,16 +111,15 @@ async def github_auth(payload: OAuthCode):
             "repos": [
                 {
                     "name": r["name"],
-                    "full_name": r["full_name"], # owner/repo
+                    "full_name": r["full_name"],
                     "url": r["clone_url"],
                     "private": r["private"],
                     "description": r["description"]
-                } for r in repos if isinstance(r, dict) and "name" in r # Filter valid repos
+                } for r in repos if isinstance(r, dict) and "name" in r
             ]
         }
 
-
-# --- Agent Logic (Same as before) ---
+# --- Agent Logic ---
 
 async def run_analysis_task(repo_url: str, team_name: str, leader_name: str):
     repo_name = repo_url.split("/")[-1].replace(".git", "")
@@ -126,12 +130,11 @@ async def run_analysis_task(repo_url: str, team_name: str, leader_name: str):
         try:
             shutil.rmtree(local_path)
         except Exception:
-            pass # Windows file lock issues sometimes
+            pass 
             
     await send_log(f"Cloning repository: {repo_url}...", "INFO")
     
     try:
-        # Check if local (for testing) or remote
         if "http" in repo_url:
              clone_repo(repo_url, local_path)
         else:
@@ -158,7 +161,6 @@ async def run_analysis_task(repo_url: str, team_name: str, leader_name: str):
         
         if not issues:
             await send_log("No issues found! Repository is clean.", "SUCCESS")
-            # Update Dashboard: PASSED
             await manager.broadcast(json.dumps({"type": "STATUS", "status": "PASSED"}))
             break
             
@@ -166,8 +168,8 @@ async def run_analysis_task(repo_url: str, team_name: str, leader_name: str):
         
         for issue in issues:
             await send_log(f"Fixing {issue['type']} in {issue['file']} line {issue['line']}: {issue['message']}", "ACTION")
-            # FIX LOGIC
             fix_result = fix_issue(local_path, issue)
+            
             if fix_result['status'] == 'fixed':
                  commit_message = f"[AI-AGENT] Fixed {issue['type']}: {issue['message']}"
                  commit_changes(local_path, commit_message, [issue['file']])
@@ -181,8 +183,13 @@ async def run_analysis_task(repo_url: str, team_name: str, leader_name: str):
                      "status": "FIXED"
                  })
                  
-    # 4. Final Push
-    # push_changes(local_path, branch_name) 
+    # 4. Final Push (Try-Catch)
+    try:
+        # push_changes(local_path, branch_name) # Explicitly disabled for local demo unless auth configured
+        pass
+    except Exception as e:
+        await send_log(f"Push failed (Local Mode): {str(e)}", "WARNING")
+
     await send_log("Analysis Complete. Ready for review.", "SUCCESS")
     
     # Send Final Report
@@ -190,13 +197,13 @@ async def run_analysis_task(repo_url: str, team_name: str, leader_name: str):
         "type": "RESULT",
         "summary": {
             "status": "PASSED" if not issues else "FAILED",
-            "totalFailures": len(fixes_applied), 
+            "totalFailures": len(fixes_applied) + len(issues), 
             "fixesApplied": len(fixes_applied),
             "duration": "0m 45s", 
             "branchName": branch_name
         },
         "fixes": fixes_applied,
-        "score": 100 - (len(fixes_applied) * 2), 
+        "score": 100 if not issues else max(0, 100 - (len(issues) * 2)), 
     }
     await manager.broadcast(json.dumps(final_report))
 
