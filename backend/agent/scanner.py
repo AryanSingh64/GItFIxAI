@@ -102,7 +102,7 @@ async def scan_javascript(repo_path: str, log_callback=None):
                         if re.search(r'[^=!<>]==[^=]', stripped):
                             issues.append({"file": rel_path, "type": "LOGIC", "line": i,
                                 "message": "Use strict equality (===) instead of (==)",  # noqa
-                                "raw": "eqeqeq", "language": "javascript", "agent": "JS Agent"})
+                                "raw": "eqeqeq", "language": "javascript", "agent": "JS Agent"})  # noqa
                         if stripped in ('debugger;', 'debugger'):
                             issues.append({"file": rel_path, "type": "LINTING", "line": i,
                                 "message": "debugger statement — remove for production",
