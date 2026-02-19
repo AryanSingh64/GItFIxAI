@@ -106,7 +106,7 @@ async def scan_javascript(repo_path: str, log_callback=None):
                         if stripped in ('debugger;', 'debugger'):
                             issues.append({"file": rel_path, "type": "LINTING", "line": i,
                                 "message": "debugger statement — remove for production",  # noqa
-                                "raw": "no-debugger", "language": "javascript", "agent": "JS Agent"})
+                                "raw": "no-debugger", "language": "javascript", "agent": "JS Agent"})  # noqa
                         if len(issues) >= MAX_ISSUES_PER_SCANNER:
                             return
                 except Exception:
