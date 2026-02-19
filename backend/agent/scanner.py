@@ -156,7 +156,7 @@ async def scan_security(repo_path: str, log_callback=None):
                                 if any(p in stripped.lower() for p in ['placeholder', 'example', 'your_', 'xxx']):
                                     continue
                                 issues.append({"file": rel_path, "type": "SECURITY", "line": i,
-                                    "message": message, "raw": "security",
+                                    "message": message, "raw": "security",  # noqa
                                     "language": ext.lstrip('.'), "agent": "Security Agent"})
                         for pattern, message, valid_exts in code_patterns:
                             if ext in valid_exts and re.search(pattern, stripped):
