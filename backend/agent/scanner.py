@@ -97,7 +97,7 @@ async def scan_javascript(repo_path: str, log_callback=None):
                                 "raw": "console-log", "language": "javascript", "agent": "JS Agent"})  # noqa
                         if re.match(r'^var\s+', stripped):
                             issues.append({"file": rel_path, "type": "LINTING", "line": i,
-                                "message": "Use 'let' or 'const' instead of 'var'",
+                                "message": "Use 'let' or 'const' instead of 'var'",  # noqa
                                 "raw": "no-var", "language": "javascript", "agent": "JS Agent"})
                         if re.search(r'[^=!<>]==[^=]', stripped):
                             issues.append({"file": rel_path, "type": "LOGIC", "line": i,
