@@ -28,7 +28,7 @@ export function useAgentSocket() {
             };
 
             ws.current.onclose = () => {
-                console.log('Disconnected from Agent WebSocket');
+                // console.log('Disconnected from Agent WebSocket');
             };
 
             ws.current.onerror = () => {
