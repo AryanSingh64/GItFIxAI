@@ -14,8 +14,13 @@ from agent.git_manager import clone_repo, create_branch, commit_changes, push_ch
 app = FastAPI(title="Autonomous CI/CD Healing Agent")
 
 # OAuth Config
-GITHUB_CLIENT_ID = "Ov23liktz8bz4X5bMsds"
-GITHUB_CLIENT_SECRET = "68338bd517c750c9f9b599a060a2d95c7c1cd72d"
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# OAuth Config
+GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
+GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 
 # CORS
 app.add_middleware(
@@ -81,8 +86,8 @@ async def github_auth(payload: OAuthCode):
         response = await client.post(
             "https://github.com/login/oauth/access_token",
             json={
-                "client_id": "Ov23liMwKc65dOyh7pna",
-                "client_secret": "8fd5d4f117978a48d44406bf6e54bd5420b26f25",
+                "client_id": GITHUB_CLIENT_ID,
+                "client_secret": GITHUB_CLIENT_SECRET,
                 "code": payload.code
             },
             headers={"Accept": "application/json"}
