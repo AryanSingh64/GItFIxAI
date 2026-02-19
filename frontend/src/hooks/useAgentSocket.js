@@ -27,7 +27,7 @@ export function useAgentSocket() {
         ws.current = new WebSocket(wsUrl);
 
         ws.current.onopen = () => {
-            console.log('Agent WebSocket connected');
+            // console.log('Agent WebSocket connected');
             retryDelay.current = 2000; // Reset backoff on success
             retryCount.current = 0;
         };
