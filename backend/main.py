@@ -142,7 +142,7 @@ async def github_auth(payload: OAuthCode):
 # Dedup lock to prevent double runs from React StrictMode
 _running_tasks = set()
 
-async def run_analysis_task(repo_url: str, team_name: str, leader_name: str, access_token: str = None):
+async def run_analysis_task(repo_url: str, team_name: str, leader_name: str, access_token: str = None):  # noqa
     # Prevent duplicate runs
     task_key = f"{repo_url}_{team_name}"
     if task_key in _running_tasks:
