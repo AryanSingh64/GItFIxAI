@@ -157,7 +157,7 @@ async def scan_security(repo_path: str, log_callback=None):
                                     continue
                                 issues.append({"file": rel_path, "type": "SECURITY", "line": i,
                                     "message": message, "raw": "security",  # noqa
-                                    "language": ext.lstrip('.'), "agent": "Security Agent"})
+                                    "language": ext.lstrip('.'), "agent": "Security Agent"})  # noqa
                         for pattern, message, valid_exts in code_patterns:
                             if ext in valid_exts and re.search(pattern, stripped):
                                 issues.append({"file": rel_path, "type": "SECURITY", "line": i,
