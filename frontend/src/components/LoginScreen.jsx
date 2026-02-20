@@ -1,7 +1,7 @@
 import { Github } from 'lucide-react';
 import React from 'react';
 
-const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID || "Ov23liMwKc65dOyh7pna";
+const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID || "Ov23liktz8bz4X5bMsds";
 
 export default function LoginScreen() {
     const handleLogin = () => {
