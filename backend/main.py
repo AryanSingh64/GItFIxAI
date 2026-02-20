@@ -24,6 +24,7 @@ app.add_middleware(
     allow_origins=[
         "https://gitfixaiiiii.vercel.app",
         "https://gitfixaiiiii-6tgn0d19g-warlords-projects.vercel.app",
+        "https://dioestrous-wolfishly-marceline.ngrok-free.dev",
         "http://localhost:5173",
     ],
     allow_credentials=True,
