@@ -7,9 +7,10 @@ export function useAgentSocket() {
     const [diffs, setDiffs] = useState([]);
     const [result, setResult] = useState(null);
     const [prUrl, setPrUrl] = useState(null);
+    const [isConnected, setIsConnected] = useState(false);
 
     const ws = useRef(null);
-    const mounted = useRef(false);
+    const mounted = useRef(true);
     const reconnectTimer = useRef(null);
 
     const retryDelay = useRef(2000);
@@ -17,16 +18,27 @@ export function useAgentSocket() {
     const retryCount = useRef(0);
 
     const connect = useCallback(() => {
-        if (ws.current?.readyState === WebSocket.OPEN) return;
-        if (retryCount.current >= maxRetries.current) return;
+        // Don't connect if already open or connecting
+        if (ws.current?.readyState === WebSocket.OPEN || ws.current?.readyState === WebSocket.CONNECTING) return;
+        if (retryCount.current >= maxRetries.current) {
+            console.warn('WebSocket: max retries reached, giving up.');
+            return;
+        }
 
         const wsUrl = getWsUrl();
+        console.log(`WebSocket: connecting to ${wsUrl} (attempt ${retryCount.current + 1})...`);
 
-        ws.current = new WebSocket(wsUrl);
+        try {
+            ws.current = new WebSocket(wsUrl);
+        } catch (e) {
+            console.error('WebSocket: failed to create connection', e);
+            return;
+        }
 
         ws.current.onopen = () => {
             console.log('Agent WebSocket connected');
-            retryDelay.current = 2000; // Reset backoff on success
+            setIsConnected(true);
+            retryDelay.current = 2000;
             retryCount.current = 0;
         };
 
@@ -51,19 +63,31 @@ export function useAgentSocket() {
         };
 
         ws.current.onclose = () => {
+            setIsConnected(false);
             if (mounted.current) {
                 retryCount.current += 1;
-                reconnectTimer.current = setTimeout(connect, retryDelay.current);
-                retryDelay.current = Math.min(retryDelay.current * 1.5, 30000); // Backoff up to 30s
+                const delay = retryDelay.current;
+                console.log(`WebSocket: closed. Reconnecting in ${delay / 1000}s...`);
+                reconnectTimer.current = setTimeout(connect, delay);
+                retryDelay.current = Math.min(retryDelay.current * 1.5, 30000);
             }
         };
 
-        ws.current.onerror = () => { };
+        ws.current.onerror = () => {
+            // onclose will fire after this, triggering reconnect
+        };
     }, []);
 
+    // Manual start — call this to initiate connection
+    const startConnection = useCallback(() => {
+        retryCount.current = 0;
+        retryDelay.current = 2000;
+        connect();
+    }, [connect]);
+
     useEffect(() => {
-        if (mounted.current) return;
         mounted.current = true;
+        // Auto-connect on mount
         connect();
 
         return () => {
@@ -81,5 +105,5 @@ export function useAgentSocket() {
         setPrUrl(null);
     }, []);
 
-    return { logs, stages, diffs, result, prUrl, clearAll };
+    return { logs, stages, diffs, result, prUrl, clearAll, isConnected, startConnection };
 }

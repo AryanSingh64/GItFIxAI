@@ -167,7 +167,7 @@ export default function AgentView() {
     const { repoUrl, teamName, leaderName, accessToken } = location.state || {};
 
     const [started, setStarted] = useState(false);
-    const { logs, stages, diffs, result, prUrl, clearAll } = useAgentSocket();
+    const { logs, stages, diffs, result, prUrl, clearAll, isConnected, startConnection } = useAgentSocket();
     const logsEndRef = useRef(null);
 
     useEffect(() => {
@@ -179,22 +179,47 @@ export default function AgentView() {
         setStarted(true);
 
         clearAll();
+
         const API_URL = getApiUrl();
 
-        fetch(`${API_URL}/analyze`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                repo_url: repoUrl,
-                team_name: teamName,
-                leader_name: leaderName,
-                access_token: accessToken
-            })
-        }).catch(e => {
-            console.error(e);
-            alert("Failed to connect to backend");
-            setStarted(false);
-        });
+        // Wake up backend first, then start analysis
+        const startAnalysis = async () => {
+            try {
+                // 1. Wake up the Render backend (free tier sleeps after inactivity)
+                console.log('Waking up backend...');
+                await fetch(`${API_URL}/docs`, { method: 'GET' }).catch(() => { });
+
+                // 2. Give WebSocket a moment to connect
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                startConnection();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // 3. Start the analysis
+                console.log('Starting analysis...');
+                const resp = await fetch(`${API_URL}/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        repo_url: repoUrl,
+                        team_name: teamName,
+                        leader_name: leaderName,
+                        access_token: accessToken
+                    })
+                });
+
+                if (!resp.ok) {
+                    const errText = await resp.text();
+                    throw new Error(`Backend error: ${resp.status} - ${errText}`);
+                }
+                console.log('Analysis request accepted');
+            } catch (e) {
+                console.error('Analysis failed:', e);
+                alert(`Failed to connect to backend: ${e.message}`);
+                setStarted(false);
+            }
+        };
+
+        startAnalysis();
     }, [repoUrl]);
 
     useEffect(() => {
