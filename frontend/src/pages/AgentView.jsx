@@ -187,7 +187,10 @@ export default function AgentView() {
             try {
                 // 1. Wake up the Render backend (free tier sleeps after inactivity)
                 console.log('Waking up backend...');
-                await fetch(`${API_URL}/docs`, { method: 'GET' }).catch(() => { });
+                await fetch(`${API_URL}/docs`, {
+                    method: 'GET',
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                }).catch(() => { });
 
                 // 2. Give WebSocket a moment to connect
                 await new Promise(resolve => setTimeout(resolve, 1500));
@@ -198,7 +201,10 @@ export default function AgentView() {
                 console.log('Starting analysis...');
                 const resp = await fetch(`${API_URL}/analyze`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
                     body: JSON.stringify({
                         repo_url: repoUrl,
                         team_name: teamName,
