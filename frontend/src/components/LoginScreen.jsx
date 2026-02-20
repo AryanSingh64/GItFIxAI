@@ -1,11 +1,11 @@
 import { Github } from 'lucide-react';
 import React from 'react';
 
-const CLIENT_ID = "Ov23liktz8bz4X5bMsds";
-const REDIRECT_URI = "http://localhost:5173";
+const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID || "Ov23liMwKc65dOyh7pna";
 
 export default function LoginScreen() {
     const handleLogin = () => {
+        const REDIRECT_URI = `${window.location.origin}/dashboard`;
         window.location.href = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=repo`;
     };
 
