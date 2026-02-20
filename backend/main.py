@@ -21,13 +21,8 @@ GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://gitfixaiiiii.vercel.app",
-        "https://gitfixaiiiii-6tgn0d19g-warlords-projects.vercel.app",
-        "https://dioestrous-wolfishly-marceline.ngrok-free.dev",
-        "http://localhost:5173",
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
