@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabase';
+import { getApiUrl } from '../lib/api';
 import { ArrowRight, Terminal, Github, Link as LinkIcon, Loader2, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import RepoList from '../components/RepoList';
@@ -34,13 +34,7 @@ export default function Dashboard() {
                 setStatusMsg('Verifying GitHub Credentials...');
 
                 try {
-                    let API_URL = import.meta.env.VITE_API_URL;
-                    // If we are NOT on localhost, but API_URL is localhost (or missing), FORCE Render URL
-                    if (window.location.hostname !== 'localhost' && (!API_URL || API_URL.includes('localhost'))) {
-                        API_URL = 'https://gitfixai.onrender.com';
-                    } else if (!API_URL) {
-                        API_URL = 'http://localhost:8000';
-                    }
+                    const API_URL = getApiUrl();
 
                     const response = await fetch(`${API_URL}/auth/github`, {
                         method: 'POST',
@@ -63,7 +57,6 @@ export default function Dashboard() {
                         setRepos(data.repos);
                         if (data.repos.length > 0) {
                             // Mock profile from first repo owner if API doesn't return user
-                            const owner = data.repos[0].owner || {}; // Need to ensure backend sends owner
                             const profile = { name: "GitHub User", avatar: "" }; // Placeholder
                             localStorage.setItem('user_profile', JSON.stringify(profile));
                             setUserProfile(profile);

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { getApiUrl } from '../lib/api';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAgentSocket } from '../hooks/useAgentSocket';
 import {
@@ -107,7 +108,7 @@ function LogEntry({ log }) {
 
 function ResultsPanel({ result, prUrl }) {
     if (!result) return null;
-    const s = result.summary;
+    const s = result.summary || { totalFailures: 0, fixesApplied: 0, remainingIssues: 0, duration: '0s' };
     const score = result.score;
     const scoreColor = score >= 80 ? 'text-emerald-400' : score >= 50 ? 'text-amber-400' : 'text-red-400';
     const scoreBg = score >= 80 ? 'from-emerald-500/20' : score >= 50 ? 'from-amber-500/20' : 'from-red-500/20';
@@ -178,12 +179,7 @@ export default function AgentView() {
         setStarted(true);
 
         clearAll();
-        let API_URL = import.meta.env.VITE_API_URL;
-        if (window.location.hostname !== 'localhost' && (!API_URL || API_URL.includes('localhost'))) {
-            API_URL = 'https://gitfixai.onrender.com';
-        } else {
-            API_URL = API_URL || 'http://localhost:8000';
-        }
+        const API_URL = getApiUrl();
 
         fetch(`${API_URL}/analyze`, {
             method: 'POST',
@@ -197,11 +193,19 @@ export default function AgentView() {
         }).catch(e => {
             console.error(e);
             alert("Failed to connect to backend");
+            setStarted(false);
         });
     }, [repoUrl]);
 
     useEffect(() => {
-        logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        // Only auto-scroll if user is near bottom or it's the first few logs
+        const container = logsEndRef.current?.parentElement;
+        if (container) {
+            const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+            if (isNearBottom || logs.length < 5) {
+                logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
     }, [logs]);
 
     const isRunning = !result;

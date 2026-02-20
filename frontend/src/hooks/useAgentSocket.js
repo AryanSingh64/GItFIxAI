@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { getWsUrl } from '../lib/api';
 
 export function useAgentSocket() {
     const [logs, setLogs] = useState([]);
@@ -19,18 +20,7 @@ export function useAgentSocket() {
         if (ws.current?.readyState === WebSocket.OPEN) return;
         if (retryCount.current >= maxRetries.current) return;
 
-        // Dynamic URL Logic - FAILSAFE FOR PRODUCTION
-        let apiUrl = import.meta.env.VITE_API_URL;
-
-        // If on production (not localhost) but env var is missing or points to localhost, FORCE production backend
-        if (window.location.hostname !== 'localhost' && (!apiUrl || apiUrl.includes('localhost'))) {
-            apiUrl = 'https://gitfixai.onrender.com';
-        } else {
-            apiUrl = apiUrl || 'http://localhost:8000';
-        }
-
-        const wsProtocol = apiUrl.startsWith('https') ? 'wss' : 'ws';
-        const wsUrl = apiUrl.replace(/^http(s)?/, wsProtocol) + '/ws';
+        const wsUrl = getWsUrl();
 
         ws.current = new WebSocket(wsUrl);
 
