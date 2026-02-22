@@ -282,7 +282,7 @@ async def _run_analysis(repo_url: str, team_name: str, leader_name: str, access_
             await send_log("[📋 PR Agent] Creating Pull Request...", "ACTION")
             pr_url = await create_pull_request(access_token, gh_owner, gh_repo, branch_name, fixes_applied)
             if pr_url:
-                await send_log(f"[📋 PR Agent] Pull Request created!", "SUCCESS")
+                await send_log("[📋 PR Agent] Pull Request created!", "SUCCESS")
                 await manager.broadcast(json.dumps({"type": "PR", "url": pr_url}))
             else:
                 await send_log("[📋 PR Agent] Could not create PR (may already exist).", "WARNING")
