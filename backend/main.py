@@ -346,11 +346,22 @@ if os.path.isdir(frontend_dist):
     from fastapi.staticfiles import StaticFiles
     from fastapi.responses import FileResponse
 
-    @app.get("/")
-    async def serve_root():
-        return FileResponse(os.path.join(frontend_dist, "index.html"))
+    # Mount static assets (JS, CSS, images) under /assets
+    assets_dir = os.path.join(frontend_dist, "assets")
+    if os.path.isdir(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
-    app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
+    # Serve index.html for all SPA routes
+    @app.get("/")
+    @app.get("/auth")
+    @app.get("/dashboard")
+    @app.get("/agent")
+    @app.get("/{catch_all:path}")
+    async def serve_spa(catch_all: str = ""):
+        # Don't serve index.html for API/docs/ws routes
+        if catch_all.startswith(("api/", "auth/", "docs", "openapi.json", "ws")):
+            raise HTTPException(status_code=404, detail="Not Found")
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
 
 
 if __name__ == "__main__":
