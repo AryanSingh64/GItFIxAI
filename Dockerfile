@@ -29,5 +29,9 @@ EXPOSE 8000
 # Set working directory to backend
 WORKDIR /app/backend
 
-# Start the backend
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Railway sets PORT dynamically - default to 8000 if not set
+ENV PORT=8000
+EXPOSE $PORT
+
+# Start the backend using shell form so $PORT is resolved at runtime
+CMD uvicorn main:app --host 0.0.0.0 --port $PORT
