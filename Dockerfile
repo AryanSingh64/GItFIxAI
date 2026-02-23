@@ -26,5 +26,8 @@ COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 # Expose port
 EXPOSE 8000
 
+# Set working directory to backend
+WORKDIR /app/backend
+
 # Start the backend
-CMD ["sh", "-c", "cd backend && uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
