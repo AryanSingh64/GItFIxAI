@@ -335,7 +335,26 @@ async def start_analysis(request: AnalyzeRequest, background_tasks: BackgroundTa
     return {"message": "Analysis started"}
 
 
+@app.get("/api/health")
+async def health_check():
+    return {"status": "ok", "message": "Autonomous CI/CD Healing Agent is running!"}
+
+
+# Serve the built React frontend (from Docker build)
+frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
+if os.path.isdir(frontend_dist):
+    from fastapi.staticfiles import StaticFiles
+    from fastapi.responses import FileResponse
+
+    @app.get("/")
+    async def serve_root():
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
+
+    app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
+
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+
