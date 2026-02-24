@@ -61,9 +61,17 @@ docker run -p 8000:8000 \
 - **Live Dashboard**: Real-time logs, Score Cards, and Diff Viewer.
 - **Sandboxed Execution**: Safe analysis in `temp_repos` directory.
 
+## ⚠️ Known Issues (Live Demo)
+
+> **GitHub OAuth Login (`/auth`) is currently not fully functional on the live deployment.**
+>
+> **Reason**: The GitHub OAuth App's callback URL is registered for a different deployment URL (Vercel). Since the live demo runs on Railway (`gitfixai.up.railway.app`), GitHub rejects the redirect and shows a 404.
+>
+> **Workaround**: Run locally using the manual start instructions above, and set up your own GitHub OAuth App with `http://localhost:5173/dashboard` as the callback URL.
+
 ## 📸 Screenshots
 *(See linked LinkedIn Video)*
 
 ---
-**Team**: RIFT ORGANISERS  
-**Leader**: Saiyam Kumar
+**Team**: CODINGGEEKS 
+**Leader**: Aryan Kumar
