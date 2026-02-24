@@ -335,7 +335,37 @@ async def start_analysis(request: AnalyzeRequest, background_tasks: BackgroundTa
     return {"message": "Analysis started"}
 
 
+@app.get("/api/health")
+async def health_check():
+    return {"status": "ok", "message": "Autonomous CI/CD Healing Agent is running!"}
+
+
+# Serve the built React frontend (from Docker build)
+frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
+if os.path.isdir(frontend_dist):
+    from fastapi.staticfiles import StaticFiles
+    from fastapi.responses import FileResponse
+
+    # Mount static assets (JS, CSS, images) under /assets
+    assets_dir = os.path.join(frontend_dist, "assets")
+    if os.path.isdir(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    # Serve index.html for all SPA routes
+    @app.get("/")
+    @app.get("/auth")
+    @app.get("/dashboard")
+    @app.get("/agent")
+    @app.get("/{catch_all:path}")
+    async def serve_spa(catch_all: str = ""):
+        # Don't serve index.html for API/docs/ws routes
+        if catch_all.startswith(("api/", "auth/", "docs", "openapi.json", "ws")):
+            raise HTTPException(status_code=404, detail="Not Found")
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
+
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+
