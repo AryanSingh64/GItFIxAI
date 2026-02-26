@@ -1,7 +1,7 @@
 export const getApiUrl = () => {
     let api_url = import.meta.env.VITE_API_URL;
     if (window.location.hostname !== 'localhost' && (!api_url || api_url.includes('localhost'))) {
-        api_url = 'https://gitfixai.onrender.com';
+        api_url = 'https://gitfixai-xfw3.onrender.com';
     } else {
         api_url = api_url || 'http://localhost:8000';
     }
