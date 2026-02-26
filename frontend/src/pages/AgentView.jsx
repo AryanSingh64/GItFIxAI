@@ -217,7 +217,7 @@ export default function AgentView() {
                     const errText = await resp.text();
                     throw new Error(`Backend error: ${resp.status} - ${errText}`);
                 }
-                console.log('Analysis request accepted');
+                // console.log('Analysis request accepted');
             } catch (e) {
                 console.error('Analysis failed:', e);
                 alert(`Failed to connect to backend: ${e.message}`);
