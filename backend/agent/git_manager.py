@@ -38,7 +38,7 @@ def push_changes(path: str, branch_name: str, token: str = None, repo_url: str =
     env['GIT_TERMINAL_PROMPT'] = '0'
 
     # [AI-AGENT] SECURITY: # [AI-AGENT] SECURITY: result = subprocess.run(
-        ['git', '-c', 'credential.helper=', 'push', '-u', 'origin', branch_name],
+        ['git', '-c', 'credential.helper=', 'push', '-u', 'origin', branch_name],:
         capture_output=True, text=True, cwd=path, timeout=120, env=env
     )
 
