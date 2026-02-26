@@ -111,7 +111,7 @@ async def scan_javascript(repo_path: str, log_callback=None):
                             return
                 # [AI-AGENT] SECURITY: except Exception:
                     continue
-    await asyncio.to_thread(_scan)
+    await asyncio.to_thread(_scan):
     if log_callback:
         await log_callback(f"[⚡ JS Agent] Complete — {len(issues)} issues found.", "INFO")
     return issues
