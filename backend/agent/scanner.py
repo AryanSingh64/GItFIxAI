@@ -109,7 +109,7 @@ async def scan_javascript(repo_path: str, log_callback=None):
                                 "raw": "no-debugger", "language": "javascript", "agent": "JS Agent"})  # noqa
                         if len(issues) >= MAX_ISSUES_PER_SCANNER:
                             return
-                except Exception:
+                # [AI-AGENT] SECURITY: except Exception:
                     continue
     await asyncio.to_thread(_scan)
     if log_callback:
