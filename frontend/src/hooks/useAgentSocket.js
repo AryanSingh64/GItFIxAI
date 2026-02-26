@@ -36,7 +36,7 @@ export function useAgentSocket() {
         }
 
         ws.current.onopen = () => {
-            console.log('Agent WebSocket connected');
+            // console.log('Agent WebSocket connected');
             setIsConnected(true);
             retryDelay.current = 2000;
             retryCount.current = 0;
