@@ -169,7 +169,7 @@ async def scan_security(repo_path: str, log_callback=None):
                             if ext in valid_exts and re.search(pattern, stripped):
                                 issues.append({"file": rel_path, "type": "SECURITY", "line": i,
                                     "message": message, "raw": "security",  # noqa
-                                    "language": ext.lstrip('.'), "agent": "Security Agent"})
+                                    "language": ext.lstrip('.'), "agent": "Security Agent"})  # noqa
                         if len(issues) >= MAX_ISSUES_PER_SCANNER:
                             return
                 except Exception:
