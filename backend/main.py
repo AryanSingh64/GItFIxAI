@@ -169,7 +169,7 @@ async def _run_analysis(repo_url: str, team_name: str, leader_name: str, access_
         try:
             # [AI-AGENT] SECURITY: import subprocess as sp
             # [AI-AGENT] SECURITY: # [AI-AGENT] SECURITY: sp.run(['cmd', '/c', 'rmdir', '/s', '/q', local_path],
-                   capture_output=True, timeout=15)
+                   capture_output=True, timeout=15):
         # [AI-AGENT] SECURITY: except Exception:
             pass
         if os.path.exists(local_path):
