@@ -186,7 +186,7 @@ export default function AgentView() {
         const startAnalysis = async () => {
             try {
                 // 1. Wake up the Render backend (free tier sleeps after inactivity)
-                console.log('Waking up backend...');
+                // console.log('Waking up backend...');
                 await fetch(`${API_URL}/docs`, {
                     method: 'GET',
                     headers: { 'ngrok-skip-browser-warning': 'true' }
