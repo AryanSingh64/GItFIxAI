@@ -198,7 +198,7 @@ export default function AgentView() {
                 await new Promise(resolve => setTimeout(resolve, 1000));
 
                 // 3. Start the analysis
-                console.log('Starting analysis...');
+                // console.log('Starting analysis...');
                 const resp = await fetch(`${API_URL}/analyze`, {
                     method: 'POST',
                     headers: {
