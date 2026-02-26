@@ -1,6 +1,6 @@
 @echo off
 echo ==================================================
-echo      AUTO-DEVOPS AGENT - ONE CLICK START
+echo      GitFixAI - ONE CLICK START
 echo ==================================================
 echo.
 
@@ -30,7 +30,7 @@ start http://localhost:5173
 
 echo.
 echo ==================================================
-echo      ALL SYSTEMS GO! 
+echo      GitFixAI - ALL SYSTEMS GO! 
 echo ==================================================
 echo Dashboard: http://localhost:5173
 echo Backend:   http://localhost:8000

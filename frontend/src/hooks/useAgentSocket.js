@@ -7,6 +7,8 @@ export function useAgentSocket() {
     const [diffs, setDiffs] = useState([]);
     const [result, setResult] = useState(null);
     const [prUrl, setPrUrl] = useState(null);
+    const [testResults, setTestResults] = useState(null);
+    const [langStats, setLangStats] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
 
     const ws = useRef(null);
@@ -18,7 +20,6 @@ export function useAgentSocket() {
     const retryCount = useRef(0);
 
     const connect = useCallback(() => {
-        // Don't connect if already open or connecting
         if (ws.current?.readyState === WebSocket.OPEN || ws.current?.readyState === WebSocket.CONNECTING) return;
         if (retryCount.current >= maxRetries.current) {
             console.warn('WebSocket: max retries reached, giving up.');
@@ -54,6 +55,10 @@ export function useAgentSocket() {
                     setResult(data);
                 } else if (data.type === 'PR') {
                     setPrUrl(data.url);
+                } else if (data.type === 'TEST_RESULTS') {
+                    setTestResults(data.data);
+                } else if (data.type === 'LANG_STATS') {
+                    setLangStats(data.data);
                 } else {
                     setLogs(prev => [...prev, data]);
                 }
@@ -78,7 +83,6 @@ export function useAgentSocket() {
         };
     }, []);
 
-    // Manual start — call this to initiate connection
     const startConnection = useCallback(() => {
         retryCount.current = 0;
         retryDelay.current = 2000;
@@ -87,7 +91,6 @@ export function useAgentSocket() {
 
     useEffect(() => {
         mounted.current = true;
-        // Auto-connect on mount
         connect();
 
         return () => {
@@ -103,7 +106,13 @@ export function useAgentSocket() {
         setDiffs([]);
         setResult(null);
         setPrUrl(null);
+        setTestResults(null);
+        setLangStats(null);
     }, []);
 
-    return { logs, stages, diffs, result, prUrl, clearAll, isConnected, startConnection };
+    return {
+        logs, stages, diffs, result, prUrl,
+        testResults, langStats,
+        clearAll, isConnected, startConnection
+    };
 }

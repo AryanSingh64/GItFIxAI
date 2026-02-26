@@ -7,5 +7,3 @@ python-dotenv
 httpx
 flake8
 openai
-supabase
-bandit

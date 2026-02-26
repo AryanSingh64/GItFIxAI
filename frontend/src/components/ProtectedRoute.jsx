@@ -1,28 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import React from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import Navbar from './Navbar';
+import { Loader2 } from 'lucide-react';
 
 export default function ProtectedRoute() {
-    const [hasAccess, setHasAccess] = useState(null);
-    const location = useLocation();
+    const { isAuthenticated, loading } = useAuth();
 
-    useEffect(() => {
-        // Check if we have a valid auth session (GitHub Token) from our backend flow
-        const token = localStorage.getItem('access_token');
-        // Also allow access if this is an OAuth callback with a ?code= parameter
-        const queryParams = new URLSearchParams(location.search);
-        const oauthCode = queryParams.get('code');
+    // Show loading spinner while checking auth state
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto mb-4" />
+                    <p className="text-secondary text-sm">Verifying session...</p>
+                </div>
+            </div>
+        );
+    }
 
-        if (token || oauthCode) {
-            setHasAccess(true);
-        } else {
-            setHasAccess(false);
-        }
-    }, [location.search]);
-
-    if (hasAccess === null) return null; // Loading state
-
-    if (!hasAccess) return <Navigate to="/auth" replace />;
+    if (!isAuthenticated) {
+        return <Navigate to="/auth" replace />;
+    }
 
     return (
         <div className="min-h-screen bg-background text-white font-sans animate-fade-in">

@@ -1,45 +1,47 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getApiUrl } from '../lib/api';
-import { ArrowRight, Terminal, Github, Link as LinkIcon, Loader2, User } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import {
+    ArrowRight, Terminal, Github, Link as LinkIcon,
+    Loader2, User, RefreshCw, Unplug, CheckCircle2, AlertCircle,
+    MessageSquare, Eye, Pencil, Package, Palette, Lock, Bot,
+} from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import RepoList from '../components/RepoList';
 
 export default function Dashboard() {
     const [repos, setRepos] = useState([]);
     const [repoUrl, setRepoUrl] = useState('');
-    const [teamName, setTeamName] = useState('RIFT ORGANISERS');
-    const [leaderName, setLeaderName] = useState('Saiyam Kumar');
+    const [commitMsg, setCommitMsg] = useState('Fixed {issues_count} issues in {files_changed} files — score {score}/100');
+    const [autoFix, setAutoFix] = useState({ syntax: true, imports: true, formatting: true, security: false });
     const [loading, setLoading] = useState(false);
     const [statusMsg, setStatusMsg] = useState('');
-    const [userProfile, setUserProfile] = useState(null);
+    const [githubConnected, setGithubConnected] = useState(false);
+    const [githubUser, setGithubUser] = useState(null);
     const navigate = useNavigate();
+    const location = useLocation();
+    const { userName, userAvatar, authProvider } = useAuth();
     const oauthProcessed = useRef(false);
 
+    // ─── On mount: check for GitHub OAuth callback code OR existing token ───
     useEffect(() => {
-        // Check local storage for session
-        const storedToken = localStorage.getItem('access_token');
-        const storedProfile = localStorage.getItem('user_profile');
-        if (storedProfile) {
-            setUserProfile(JSON.parse(storedProfile));
-        }
-
-        const checkAuthCode = async () => {
-            const queryParams = new URLSearchParams(window.location.search);
+        const processGithubCallback = async () => {
+            const queryParams = new URLSearchParams(location.search);
             const code = queryParams.get('code');
 
+            // If there's an OAuth code in the URL, exchange it for a token
             if (code && !oauthProcessed.current) {
                 oauthProcessed.current = true;
-                window.history.replaceState({}, document.title, "/dashboard");
+                window.history.replaceState({}, document.title, '/dashboard');
                 setLoading(true);
-                setStatusMsg('Verifying GitHub Credentials...');
+                setStatusMsg('Connecting GitHub account...');
 
                 try {
                     const API_URL = getApiUrl();
-
                     const response = await fetch(`${API_URL}/auth/github`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code })
+                        body: JSON.stringify({ code }),
                     });
 
                     if (!response.ok) {
@@ -50,68 +52,154 @@ export default function Dashboard() {
                     const data = await response.json();
 
                     if (data.access_token) {
-                        localStorage.setItem('access_token', data.access_token);
+                        localStorage.setItem('github_access_token', data.access_token);
+                        setGithubConnected(true);
+                    }
+
+                    if (data.user) {
+                        localStorage.setItem('github_user', JSON.stringify(data.user));
+                        setGithubUser(data.user);
                     }
 
                     if (data.repos) {
                         setRepos(data.repos);
-                        if (data.repos.length > 0) {
-                            // Mock profile from first repo owner if API doesn't return user
-                            const profile = { name: "GitHub User", avatar: "" }; // Placeholder
-                            localStorage.setItem('user_profile', JSON.stringify(profile));
-                            setUserProfile(profile);
-                        }
-                    } else {
-                        alert('Authenticated, but no repositories were found. Make sure you have public repos.');
                     }
                 } catch (error) {
-                    console.error("Repo Fetch Failed", error);
-                    alert(`Authentication Failed: ${error.message}`);
+                    console.error('GitHub connection failed:', error);
+                    alert(`GitHub connection failed: ${error.message}`);
                 } finally {
                     setLoading(false);
                     setStatusMsg('');
                 }
+                return;
+            }
+
+            // No code in URL — check if we already have a stored GitHub token
+            const storedToken = localStorage.getItem('github_access_token');
+            const storedUser = localStorage.getItem('github_user');
+
+            if (storedToken) {
+                setGithubConnected(true);
+                if (storedUser) {
+                    try { setGithubUser(JSON.parse(storedUser)); } catch { /* ignore */ }
+                }
+                // Auto-fetch repos
+                await fetchRepos(storedToken);
             }
         };
 
-        checkAuthCode();
-    }, []);
+        processGithubCallback();
+    }, [location.search]);
 
-    const handleConnectGithub = () => {
-        // Use the updated Client ID from User
-        const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
-        const REDIRECT_URI = `${window.location.origin}/dashboard`;
-        window.location.href = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=repo`;
+    // ─── Fetch repos using a GitHub token ───
+    const fetchRepos = async (token) => {
+        if (!token) return;
+        setLoading(true);
+        setStatusMsg('Loading repositories...');
+        try {
+            const res = await fetch('https://api.github.com/user/repos?sort=updated&per_page=100', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/vnd.github.v3+json',
+                },
+            });
+            if (!res.ok) throw new Error('Failed to fetch repositories');
+            const data = await res.json();
+            setRepos(
+                data
+                    .filter((r) => r && r.name)
+                    .map((r) => ({
+                        name: r.name,
+                        full_name: r.full_name,
+                        url: r.clone_url,
+                        private: r.private,
+                        description: r.description,
+                    }))
+            );
+        } catch (err) {
+            console.error('Repo fetch error:', err);
+        } finally {
+            setLoading(false);
+            setStatusMsg('');
+        }
     };
 
+    // ─── Connect GitHub (separate from login) ───
+    const handleConnectGithub = () => {
+        const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
+        if (!CLIENT_ID) {
+            alert('GitHub Client ID is not configured. Please set VITE_GITHUB_CLIENT_ID in your .env file.');
+            return;
+        }
+        // Redirect to GitHub OAuth — callback comes back to /dashboard?code=xxx
+        window.location.href = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&scope=repo&redirect_uri=${encodeURIComponent(window.location.origin + '/dashboard')}`;
+    };
+
+    // ─── Disconnect GitHub ───
+    const handleDisconnectGithub = () => {
+        localStorage.removeItem('github_access_token');
+        localStorage.removeItem('github_user');
+        setGithubConnected(false);
+        setGithubUser(null);
+        setRepos([]);
+    };
+
+    // ─── Refresh repos ───
+    const handleRefreshRepos = async () => {
+        const token = localStorage.getItem('github_access_token');
+        if (!token) {
+            alert('No GitHub connection. Please connect your GitHub account first.');
+            return;
+        }
+        await fetchRepos(token);
+    };
+
+    // ─── Start Analysis ───
     const startAnalysis = () => {
-        if (!repoUrl) return alert("Please select a repository or enter a URL!");
-        if (!repoUrl.includes('github.com')) return alert("Please enter a valid GitHub repository URL!");
-        navigate('/agent', { state: { repoUrl, teamName, leaderName, accessToken: localStorage.getItem('access_token') } });
+        if (!repoUrl) return alert('Please select a repository or enter a URL!');
+        if (!repoUrl.includes('github.com')) return alert('Please enter a valid GitHub repository URL!');
+        const token = localStorage.getItem('github_access_token');
+        navigate('/agent', {
+            state: {
+                repoUrl,
+                commitMsg,
+                autoFix,
+                accessToken: token,
+            },
+        });
     };
 
     return (
         <div className="space-y-8 pb-12">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-white/5 pb-4 md:pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Mission Control</h1>
-                    <p className="text-secondary">Select a target for autonomous remediation.</p>
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1 text-white">Mission Control</h1>
+                    <p className="text-secondary text-sm">Select a target for autonomous remediation.</p>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    {userProfile && (
+                <div className="flex items-center gap-3">
+                    {/* Auth info badge */}
+                    {userName && (
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-xs text-white">
-                            <User className="w-3 h-3" /> Logged In
+                            {userAvatar ? (
+                                <img src={userAvatar} alt="" className="w-4 h-4 rounded-full" />
+                            ) : (
+                                <User className="w-3 h-3" />
+                            )}
+                            {userName}
                         </div>
                     )}
-                    {repos.length === 0 && !loading && (
-                        <button
-                            onClick={handleConnectGithub}
-                            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg border border-white/10 transition-colors text-sm font-medium"
-                        >
-                            <Github className="w-4 h-4" /> Import from GitHub
-                        </button>
+
+                    {/* GitHub connection status badge */}
+                    {githubConnected && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 rounded-full border border-green-500/20 text-xs text-green-400">
+                            <CheckCircle2 className="w-3 h-3" />
+                            GitHub Connected
+                            {githubUser?.login && (
+                                <span className="text-green-500/60 ml-0.5">@{githubUser.login}</span>
+                            )}
+                        </div>
                     )}
                 </div>
             </div>
@@ -126,50 +214,135 @@ export default function Dashboard() {
                 </div>
             )}
 
+            {/* GitHub Connection Card - shown for all users when GitHub is NOT connected */}
+            {!githubConnected && (
+                <div className="bg-surface p-1 rounded-2xl border border-white/5 shadow-2xl">
+                    <div className="bg-black/50 p-8 rounded-xl text-center">
+                        <div className="inline-flex p-4 bg-white/5 rounded-2xl mb-5 border border-white/5">
+                            <Github className="w-8 h-8 text-white" />
+                        </div>
+                        <h2 className="text-xl font-bold text-white mb-2">Connect Your GitHub Account</h2>
+                        <p className="text-secondary text-sm max-w-lg mx-auto mb-6">
+                            Connect your GitHub account to import repositories and enable the AI agent to push automated fixes.
+                            This is separate from your login method — you can be logged in with {authProvider === 'google' ? 'Google' : authProvider === 'email' ? 'email' : 'any provider'} and still connect GitHub.
+                        </p>
+                        <button
+                            onClick={handleConnectGithub}
+                            className="inline-flex items-center gap-3 bg-white text-black font-bold px-8 py-3.5 rounded-xl hover:bg-gray-200 transition-all active:scale-[0.97] shadow-lg shadow-white/10"
+                        >
+                            <Github className="w-5 h-5" />
+                            Connect GitHub Account
+                        </button>
+                        <p className="text-xs text-zinc-600 mt-4">
+                            Grants read/write access to your selected repositories.
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* OR: Manual URL entry for users who don't want to connect GitHub */}
+            {!githubConnected && (
+                <div className="flex items-center gap-4 my-2">
+                    <div className="flex-1 h-px bg-white/10" />
+                    <span className="text-xs text-secondary uppercase tracking-widest">or enter a url manually</span>
+                    <div className="flex-1 h-px bg-white/10" />
+                </div>
+            )}
+
             {/* Input Configuration Panel */}
             <div className="bg-surface p-1 rounded-2xl border border-white/5 shadow-2xl">
-                <div className="bg-black/50 p-6 rounded-xl space-y-6">
-
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <Terminal className="w-5 h-5 text-primary" />
+                <div className="bg-black/50 p-4 md:p-6 rounded-xl space-y-4 md:space-y-6">
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                                <Terminal className="w-5 h-5 text-primary" />
+                            </div>
+                            <h2 className="text-lg font-semibold text-white">Target Configuration</h2>
                         </div>
-                        <h2 className="text-lg font-semibold text-white">Target Configuration</h2>
+
+                        {/* GitHub actions (when connected) */}
+                        {githubConnected && (
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handleRefreshRepos}
+                                    disabled={loading}
+                                    className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 text-secondary hover:text-white px-3 py-1.5 rounded-lg border border-white/10 transition-colors text-xs"
+                                >
+                                    <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+                                    Refresh Repos
+                                </button>
+                                <button
+                                    onClick={handleDisconnectGithub}
+                                    className="flex items-center gap-1.5 text-secondary hover:text-red-400 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors text-xs"
+                                >
+                                    <Unplug className="w-3 h-3" />
+                                    Disconnect
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 gap-4">
                         <div className="relative group">
-                            <label className="text-xs font-mono text-secondary uppercase mb-1 block pl-1">Git Repository URL</label>
+                            <label className="text-xs font-mono text-secondary uppercase mb-1 block pl-1">
+                                Git Repository URL
+                            </label>
                             <div className="relative">
-                                <LinkIcon className="absolute left-4 top-3.5 w-4 h-4 text-secondary/50 group-focus-within:text-primary transition-colors" />
+                                <LinkIcon className="absolute left-3 md:left-4 top-2.5 md:top-3 w-4 h-4 text-secondary/50 group-focus-within:text-primary transition-colors" />
                                 <input
                                     type="text"
                                     placeholder="https://github.com/username/repository"
-                                    className="w-full bg-background border border-white/10 rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-primary transition-all font-mono text-sm shadow-inner"
+                                    className="w-full bg-background border border-white/10 rounded-lg pl-9 md:pl-10 pr-4 py-2.5 md:py-3 text-white focus:outline-none focus:border-primary transition-all font-mono text-sm shadow-inner"
                                     value={repoUrl}
                                     onChange={(e) => setRepoUrl(e.target.value)}
                                 />
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="text-xs font-mono text-secondary uppercase mb-1 block pl-1">Team Name</label>
-                                <input
-                                    type="text"
-                                    className="w-full bg-background border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors text-sm"
-                                    value={teamName}
-                                    onChange={(e) => setTeamName(e.target.value)}
-                                />
+                        {/* Commit Message Template */}
+                        <div className="relative group">
+                            <label className="text-xs font-mono text-secondary uppercase mb-1 pl-1 flex items-center gap-1.5">
+                                <MessageSquare className="w-3 h-3" /> Auto-Commit Message
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="Fixed {issues_count} issues by GitFixAI"
+                                className="w-full bg-background border border-white/10 rounded-lg px-4 py-2.5 md:py-3 text-white focus:outline-none focus:border-primary transition-all text-sm"
+                                value={commitMsg}
+                                onChange={(e) => setCommitMsg(e.target.value)}
+                            />
+                            {/* Live preview */}
+                            <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-white/30">
+                                <Eye className="w-3 h-3" />
+                                <span>Preview: {commitMsg.replace('{issues_count}', '12').replace('{files_changed}', '5').replace('{score}', '94')}</span>
                             </div>
-                            <div>
-                                <label className="text-xs font-mono text-secondary uppercase mb-1 block pl-1">Team Leader</label>
-                                <input
-                                    type="text"
-                                    className="w-full bg-background border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors text-sm"
-                                    value={leaderName}
-                                    onChange={(e) => setLeaderName(e.target.value)}
-                                />
+                        </div>
+
+                        {/* Auto-Fix Preferences */}
+                        <div>
+                            <label className="text-xs font-mono text-secondary uppercase mb-2 block pl-1">Auto-Fix Preferences</label>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                {[
+                                    { key: 'syntax', label: 'Syntax', icon: <Pencil className="w-3.5 h-3.5" /> },
+                                    { key: 'imports', label: 'Imports', icon: <Package className="w-3.5 h-3.5" /> },
+                                    { key: 'formatting', label: 'Formatting', icon: <Palette className="w-3.5 h-3.5" /> },
+                                    { key: 'security', label: 'Security', icon: <Lock className="w-3.5 h-3.5" /> },
+                                ].map(({ key, label, icon }) => (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        onClick={() => setAutoFix(prev => ({ ...prev, [key]: !prev[key] }))}
+                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-all cursor-pointer ${autoFix[key]
+                                            ? 'bg-primary/10 border-primary/30 text-white'
+                                            : 'bg-white/2 border-white/10 text-white/40 hover:bg-white/5'
+                                            }`}
+                                    >
+                                        <span className="opacity-70">{icon}</span>
+                                        <span>{label}</span>
+                                        <div className={`ml-auto w-3 h-3 rounded-full transition-colors ${autoFix[key] ? 'bg-primary' : 'bg-white/10'
+                                            }`} />
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -177,10 +350,20 @@ export default function Dashboard() {
                     <div className="pt-2">
                         <button
                             onClick={startAnalysis}
-                            className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-blue-500 hover:to-blue-600 text-white font-bold rounded-lg py-4 transition-all active:scale-[0.99] flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 group"
+                            className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-blue-500 hover:to-blue-600 text-white font-bold rounded-lg py-3 md:py-4 transition-all active:scale-[0.99] flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 group text-sm md:text-base"
                         >
-                            Initialize Agent <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            Initialize Agent{' '}
+                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </button>
+
+                        {!githubConnected && (
+                            <div className="flex items-center gap-2 justify-center mt-3">
+                                <AlertCircle className="w-3.5 h-3.5 text-yellow-500/70" />
+                                <span className="text-xs text-yellow-500/70">
+                                    GitHub not connected — the agent won't be able to push fixes. You can still scan public repos.
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -188,20 +371,26 @@ export default function Dashboard() {
             {/* User Repositories Grid */}
             {repos.length > 0 ? (
                 <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-sm text-secondary uppercase font-mono tracking-wider">
-                        <Github className="w-4 h-4" /> Available Targets
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm text-secondary uppercase font-mono tracking-wider">
+                            <Github className="w-4 h-4" /> Available Targets ({repos.length})
+                        </div>
+                        {githubUser?.login && (
+                            <span className="text-xs text-secondary">
+                                from <span className="text-white">@{githubUser.login}</span>
+                            </span>
+                        )}
                     </div>
                     <RepoList repos={repos} onSelect={(url) => setRepoUrl(url)} />
                 </div>
             ) : (
                 <>
-                    {localStorage.getItem('access_token') && !loading && (
+                    {githubConnected && !loading && (
                         <div className="text-center py-12 border border-dashed border-white/10 rounded-xl bg-white/5">
                             <Github className="w-12 h-12 text-secondary mx-auto mb-4 opacity-50" />
                             <h3 className="text-lg font-medium text-white mb-2">No Repositories Found</h3>
                             <p className="text-secondary text-sm max-w-md mx-auto">
-                                We couldn't find any public repositories linked to your account.
-                                You can still manually enter a Git URL above.
+                                We couldn't find any repositories. Try refreshing or enter a Git URL manually above.
                             </p>
                         </div>
                     )}

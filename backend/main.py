@@ -8,9 +8,11 @@ import shutil
 import asyncio
 import json
 import httpx
-from agent.scanner import scan_repository
+from agent.scanner import scan_repository, detect_languages
 from agent.fixer import fix_issue
 from agent.git_manager import clone_repo, create_branch, commit_changes, push_changes, create_pull_request
+from agent.test_runner import discover_and_run_tests
+from db import save_analysis_run, save_file_fixes, get_user_runs
 
 load_dotenv()
 
@@ -34,8 +36,9 @@ app.add_middleware(
 
 class AnalyzeRequest(BaseModel):
     repo_url: str
-    team_name: str
-    leader_name: str
+    team_name: str = "GitFixAI"
+    leader_name: str = "Agent"
+    commit_msg: str = "Fixed {issues_count} issues in {files_changed} files"
     access_token: str = None
 
 
@@ -145,7 +148,7 @@ async def github_auth(payload: OAuthCode):
 _running_tasks = set()
 
 
-async def run_analysis_task(repo_url: str, team_name: str, leader_name: str, access_token: str = None):
+async def run_analysis_task(repo_url: str, team_name: str, leader_name: str, access_token: str = None, commit_msg: str = None):
     task_key = f"{repo_url}_{team_name}"
     if task_key in _running_tasks:
         return
@@ -156,7 +159,7 @@ async def run_analysis_task(repo_url: str, team_name: str, leader_name: str, acc
         _running_tasks.discard(task_key)
 
 
-async def _run_analysis(repo_url: str, team_name: str, leader_name: str, access_token: str = None):
+async def _run_analysis(repo_url: str, team_name: str, leader_name: str, access_token: str = None, commit_msg: str = None):
     start_time = time.time()
     repo_name = repo_url.split("/")[-1].replace(".git", "")
     local_path = os.path.abspath(f"./temp_repos/{repo_name}")
@@ -272,6 +275,22 @@ async def _run_analysis(repo_url: str, team_name: str, leader_name: str, access_
 
     await send_stage("FIX", "done")
 
+    # ═══ STAGE 3.5: TEST ═══
+    await send_stage("TEST", "active")
+    test_results = None
+    try:
+        test_results = await discover_and_run_tests(local_path, log_callback=send_log)
+        if test_results.get('detected'):
+            await manager.broadcast(json.dumps({
+                "type": "TEST_RESULTS",
+                "data": test_results
+            }))
+        else:
+            await send_log("[🧪 Test Agent] No test frameworks found.", "INFO")
+    except Exception as e:
+        await send_log(f"[🧪 Test Agent] Error: {str(e)[:100]}", "WARNING")
+    await send_stage("TEST", "done")
+
     # ═══ STAGE 4: PUSH ═══
     await send_stage("PUSH", "active")
     pr_url = None
@@ -300,6 +319,16 @@ async def _run_analysis(repo_url: str, team_name: str, leader_name: str, access_
 
     await send_stage("PUSH", "done")
 
+    # ═══ Broadcast language stats ═══
+    try:
+        lang_stats = await asyncio.to_thread(detect_languages, local_path)
+        await manager.broadcast(json.dumps({
+            "type": "LANG_STATS",
+            "data": lang_stats
+        }))
+    except Exception:
+        pass
+
     # ═══ STAGE 5: DONE ═══
     elapsed = time.time() - start_time
     duration = f"{int(elapsed // 60)}m {int(elapsed % 60)}s"
@@ -325,6 +354,27 @@ async def _run_analysis(repo_url: str, team_name: str, leader_name: str, access_
     }
     await manager.broadcast(json.dumps(final_report))
 
+    # ═══ Save to Database ═══
+    try:
+        run_id = await save_analysis_run({
+            "repo_url": repo_url,
+            "team_name": team_name,
+            "leader_name": leader_name,
+            "branch_name": branch_name,
+            "status": "PASSED" if not remaining_issues else "PARTIAL",
+            "total_failures": total,
+            "fixes_applied": len(fixes_applied),
+            "remaining_issues": len(remaining_issues),
+            "duration": duration,
+            "score": score,
+            "pr_url": pr_url,
+        })
+        if run_id:
+            await save_file_fixes(run_id, fixes_applied)
+            await send_log("[💾 DB Agent] Results saved to database.", "SUCCESS")
+    except Exception as e:
+        await send_log(f"[💾 DB Agent] DB save skipped: {str(e)}", "WARNING")
+
 
 @app.post("/analyze")
 async def start_analysis(request: AnalyzeRequest, background_tasks: BackgroundTasks):
@@ -334,9 +384,16 @@ async def start_analysis(request: AnalyzeRequest, background_tasks: BackgroundTa
 
     background_tasks.add_task(
         run_analysis_task, request.repo_url, request.team_name,
-        request.leader_name, request.access_token
+        request.leader_name, request.access_token, request.commit_msg
     )
     return {"message": "Analysis started"}
+
+
+@app.get("/history")
+async def get_history(limit: int = 20):
+    """Get past analysis runs from the database."""
+    runs = await get_user_runs(limit=limit)
+    return {"runs": runs}
 
 
 if __name__ == "__main__":
