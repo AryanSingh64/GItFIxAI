@@ -1,6 +1,6 @@
 import os
 import re
-import subprocess
+# [AI-AGENT] SECURITY: import subprocess
 import asyncio
 
 MAX_ISSUES_PER_SCANNER = 20
