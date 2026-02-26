@@ -26,7 +26,7 @@ export function useAgentSocket() {
         }
 
         const wsUrl = getWsUrl();
-        console.log(`WebSocket: connecting to ${wsUrl} (attempt ${retryCount.current + 1})...`);
+        // console.log(`WebSocket: connecting to ${wsUrl} (attempt ${retryCount.current + 1})...`);
 
         try {
             ws.current = new WebSocket(wsUrl);
@@ -36,7 +36,7 @@ export function useAgentSocket() {
         }
 
         ws.current.onopen = () => {
-            console.log('Agent WebSocket connected');
+            // console.log('Agent WebSocket connected');
             setIsConnected(true);
             retryDelay.current = 2000;
             retryCount.current = 0;
@@ -67,7 +67,7 @@ export function useAgentSocket() {
             if (mounted.current) {
                 retryCount.current += 1;
                 const delay = retryDelay.current;
-                console.log(`WebSocket: closed. Reconnecting in ${delay / 1000}s...`);
+                // console.log(`WebSocket: closed. Reconnecting in ${delay / 1000}s...`);
                 reconnectTimer.current = setTimeout(connect, delay);
                 retryDelay.current = Math.min(retryDelay.current * 1.5, 30000);
             }
