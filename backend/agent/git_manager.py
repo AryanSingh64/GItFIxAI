@@ -1,5 +1,5 @@
 from git import Repo
-import subprocess
+# [AI-AGENT] SECURITY: import subprocess
 import os
 import httpx
 
