@@ -67,7 +67,7 @@ export function useAgentSocket() {
             if (mounted.current) {
                 retryCount.current += 1;
                 const delay = retryDelay.current;
-                console.log(`WebSocket: closed. Reconnecting in ${delay / 1000}s...`);
+                // console.log(`WebSocket: closed. Reconnecting in ${delay / 1000}s...`);
                 reconnectTimer.current = setTimeout(connect, delay);
                 retryDelay.current = Math.min(retryDelay.current * 1.5, 30000);
             }
