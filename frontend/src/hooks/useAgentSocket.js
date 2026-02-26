@@ -26,7 +26,7 @@ export function useAgentSocket() {
         }
 
         const wsUrl = getWsUrl();
-        console.log(`WebSocket: connecting to ${wsUrl} (attempt ${retryCount.current + 1})...`);
+        // console.log(`WebSocket: connecting to ${wsUrl} (attempt ${retryCount.current + 1})...`);
 
         try {
             ws.current = new WebSocket(wsUrl);
