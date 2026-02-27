@@ -77,20 +77,16 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 <div align="center">
 
 ### Landing Page
-
-https://github.com/AryanSingh64/GItFIxAI/blob/main/assets/demo/landing1.mp4
+<img src="./assets/demo/landing1-ezgif.com-video-to-gif-converter.gif" alt="Landing Page" width="720"/>
 
 ### Dashboard
-
-https://github.com/AryanSingh64/GItFIxAI/blob/main/assets/demo/dashboard.mp4
+<img src="./assets/demo/dashboard-ezgif.com-video-to-gif-converter.gif" alt="Dashboard" width="720"/>
 
 ### Live Analysis
-
-https://github.com/AryanSingh64/GItFIxAI/blob/main/assets/demo/analysis.mp4
+<img src="./assets/demo/analysis-ezgif.com-video-to-gif-converter.gif" alt="Live Analysis" width="720"/>
 
 ### Results
-
-https://github.com/AryanSingh64/GItFIxAI/blob/main/assets/demo/result.mp4
+<img src="./assets/demo/result-ezgif.com-video-to-gif-converter.gif" alt="Results" width="720"/>
 
 </div>
 
