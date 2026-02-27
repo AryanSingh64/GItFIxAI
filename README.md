@@ -74,19 +74,32 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ## <img src="./assets/icons/camera.svg" width="22"/> Demo
 
+<!-- 
+  HOW TO ADD VIDEOS:
+  1. Go to https://github.com/AryanSingh64/GItFIxAI/issues/new
+  2. Drag & drop each MP4 file from assets/demo/ into the text box
+  3. GitHub will generate URLs like: https://github.com/user-attachments/assets/xxxxxxxx
+  4. Copy those URLs and paste them below (replace the placeholder links)
+  5. Close the issue without saving — the URLs still work permanently
+-->
+
 <div align="center">
 
 ### Landing Page
-<video src="https://github.com/AryanSingh64/GItFIxAI/raw/main/frontend/public/landing1.mp4" width="720" controls autoplay muted loop></video>
+
+https://github.com/AryanSingh64/GItFIxAI/raw/main/assets/demo/landing1.mp4
 
 ### Dashboard
-<video src="https://github.com/AryanSingh64/GItFIxAI/raw/main/frontend/public/dashboard.mp4" width="720" controls autoplay muted loop></video>
+
+https://github.com/AryanSingh64/GItFIxAI/raw/main/assets/demo/dashboard.mp4
 
 ### Live Analysis
-<video src="https://github.com/AryanSingh64/GItFIxAI/raw/main/frontend/public/analysis.mp4" width="720" controls autoplay muted loop></video>
+
+https://github.com/AryanSingh64/GItFIxAI/raw/main/assets/demo/analysis.mp4
 
 ### Results
-<video src="https://github.com/AryanSingh64/GItFIxAI/raw/main/frontend/public/result.mp4" width="720" controls autoplay muted loop></video>
+
+https://github.com/AryanSingh64/GItFIxAI/raw/main/assets/demo/result.mp4
 
 </div>
 
