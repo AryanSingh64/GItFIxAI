@@ -33,11 +33,11 @@ export default function Navbar() {
 
     return (
         <div className="border-b border-white/5 bg-black/80 backdrop-blur-md sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div className="max-w-7xl mx-auto px-3 md:px-6 h-12 md:h-14 flex items-center justify-between">
                 <div className="flex items-center gap-8">
-                    <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-                        <div className="bg-gradient-to-br from-[#0066ff]/20 to-[#7c3aed]/20 p-1.5 rounded-lg border border-white/10 group-hover:border-[#7c3aed]/50 transition-colors">
-                            <svg viewBox="0 0 120 120" className="w-5 h-5">
+                    <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity group">
+                        <div className="bg-gradient-to-br from-[#0066ff]/20 to-[#7c3aed]/20 p-1 md:p-1.5 rounded-lg border border-white/10 group-hover:border-[#7c3aed]/50 transition-colors">
+                            <svg viewBox="0 0 120 120" className="w-4 h-4 md:w-5 md:h-5">
                                 <circle cx="60" cy="32" r="16" fill="#24292e" />
                                 <circle cx="54" cy="30" r="4" fill="white" />
                                 <circle cx="66" cy="30" r="4" fill="white" />
@@ -49,26 +49,24 @@ export default function Navbar() {
                                 <circle cx="74" cy="22" r="5" fill="#24292e" />
                             </svg>
                         </div>
-                        <span className="font-bold tracking-tight text-white">
+                        <span className="font-bold tracking-tight text-white text-sm md:text-base">
                             <span className="font-normal">Git</span>
                             <span className="font-bold">Fix</span>
                             <span className="font-bold bg-gradient-to-r from-[#0066ff] to-[#7c3aed] bg-clip-text text-transparent">AI</span>
                         </span>
                     </Link>
 
+                    {/* Desktop nav links */}
                     <div className="hidden md:flex items-center gap-1 text-sm font-medium text-secondary">
                         <Link to="/dashboard" className={`flex items-center gap-2 px-3 py-1.5 rounded-md hover:text-white transition-colors ${location.pathname === '/dashboard' ? 'text-white bg-white/5' : ''}`}>
                             <LayoutDashboard className="w-4 h-4" /> Dashboard
                         </Link>
-
                         <Link to="/history" className={`flex items-center gap-2 px-3 py-1.5 rounded-md hover:text-white transition-colors ${location.pathname === '/history' ? 'text-white bg-white/5' : ''}`}>
                             <History className="w-4 h-4" /> History
                         </Link>
-
                         <Link to="/docs" className={`flex items-center gap-2 px-3 py-1.5 rounded-md hover:text-white transition-colors ${location.pathname === '/docs' ? 'text-white bg-white/5' : ''}`}>
                             <BookOpen className="w-4 h-4" /> Docs
                         </Link>
-
                         {location.pathname === '/agent' && (
                             <>
                                 <span className="text-white/10">/</span>
@@ -77,6 +75,19 @@ export default function Navbar() {
                                 </div>
                             </>
                         )}
+                    </div>
+
+                    {/* Mobile nav icons */}
+                    <div className="flex md:hidden items-center gap-0.5 ml-2">
+                        <Link to="/dashboard" className={`p-2 rounded-md transition-colors ${location.pathname === '/dashboard' ? 'text-white bg-white/5' : 'text-white/40'}`}>
+                            <LayoutDashboard className="w-4 h-4" />
+                        </Link>
+                        <Link to="/history" className={`p-2 rounded-md transition-colors ${location.pathname === '/history' ? 'text-white bg-white/5' : 'text-white/40'}`}>
+                            <History className="w-4 h-4" />
+                        </Link>
+                        <Link to="/docs" className={`p-2 rounded-md transition-colors ${location.pathname === '/docs' ? 'text-white bg-white/5' : 'text-white/40'}`}>
+                            <BookOpen className="w-4 h-4" />
+                        </Link>
                     </div>
                 </div>
 
@@ -94,17 +105,17 @@ export default function Navbar() {
                     <div className="relative">
                         <button
                             onClick={() => setShowDropdown(!showDropdown)}
-                            className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/10"
+                            className="flex items-center gap-1.5 md:gap-2 px-1.5 md:px-3 py-1 md:py-1.5 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/10"
                         >
                             {userAvatar ? (
-                                <img src={userAvatar} alt={userName} className="w-7 h-7 rounded-full ring-2 ring-white/10" />
+                                <img src={userAvatar} alt={userName} className="w-7 h-7 rounded-full ring-2 ring-gradient-to-r from-[#0066ff]/50 to-[#7c3aed]/50" />
                             ) : (
                                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center text-xs font-bold text-white ring-2 ring-white/10">
                                     {userName?.charAt(0)?.toUpperCase() || 'U'}
                                 </div>
                             )}
-                            <span className="text-sm font-medium text-white hidden sm:block max-w-[120px] truncate">{userName}</span>
-                            <ChevronDown className={`w-3.5 h-3.5 text-secondary transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+                            <span className="text-sm font-medium text-white hidden md:block max-w-[120px] truncate">{userName}</span>
+                            <ChevronDown className={`w-3 h-3 text-secondary transition-transform hidden md:block ${showDropdown ? 'rotate-180' : ''}`} />
                         </button>
 
                         {/* Dropdown Menu */}

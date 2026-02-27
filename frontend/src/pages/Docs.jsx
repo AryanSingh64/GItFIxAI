@@ -492,26 +492,26 @@ export default function DocsPage() {
         <div className="min-h-screen bg-[#0a0c10] text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
             {/* Top bar */}
             <div className="border-b border-white/5 bg-[#0a0c10]/90 backdrop-blur-xl sticky top-0 z-30">
-                <div className="max-w-7xl mx-auto px-6 h-14 flex items-center gap-4">
+                <div className="max-w-7xl mx-auto px-4 md:px-6 py-2.5 md:py-0 md:h-14 flex flex-wrap md:flex-nowrap items-center gap-2 md:gap-4">
                     <button onClick={() => navigate(-1)} className="text-white/40 hover:text-white transition-colors cursor-pointer">
-                        <ArrowLeft className="w-5 h-5" />
+                        <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
                     </button>
                     <div className="flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-[#7c3aed]" />
-                        <span className="font-bold text-white">
+                        <BookOpen className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#7c3aed]" />
+                        <span className="font-bold text-white text-sm md:text-base">
                             <span className="font-normal">Git</span>Fix<span className="bg-gradient-to-r from-[#0066ff] to-[#7c3aed] bg-clip-text text-transparent">AI</span>
                         </span>
-                        <span className="text-white/20 mx-1">·</span>
-                        <span className="text-white/40 text-sm">Documentation</span>
+                        <span className="text-white/20 mx-0.5 hidden md:inline">·</span>
+                        <span className="text-white/40 text-xs md:text-sm hidden md:inline">Documentation</span>
                     </div>
-                    <div className="ml-auto relative">
+                    <div className="w-full md:w-auto md:ml-auto order-last md:order-none relative">
                         <Search className="w-4 h-4 text-white/20 absolute left-3 top-1/2 -translate-y-1/2" />
                         <input
                             type="text"
                             placeholder="Search docs..."
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            className="bg-white/5 border border-white/10 rounded-lg pl-9 pr-4 py-1.5 text-sm text-white placeholder-white/20 focus:border-[#7c3aed] focus:outline-none transition-colors w-48 md:w-64"
+                            className="w-full md:w-64 bg-white/5 border border-white/10 rounded-lg pl-9 pr-4 py-1.5 text-sm text-white placeholder-white/20 focus:border-[#7c3aed] focus:outline-none transition-colors"
                         />
                     </div>
                 </div>
@@ -548,7 +548,7 @@ export default function DocsPage() {
                 </aside>
 
                 {/* Main Content */}
-                <main className="flex-1 min-w-0 py-8 px-6 md:px-12">
+                <main className="flex-1 min-w-0 py-6 md:py-8 px-4 md:px-12 overflow-hidden" style={{ wordBreak: 'break-word' }}>
                     {filteredSections.length === 0 ? (
                         <div className="text-center py-20 text-white/30">
                             <Search className="w-8 h-8 mx-auto mb-3 opacity-50" />

@@ -174,30 +174,33 @@ export default function Dashboard() {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-white/5 pb-4 md:pb-6">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1 text-white">Mission Control</h1>
-                    <p className="text-secondary text-sm">Select a target for autonomous remediation.</p>
+                    <h1 className="text-xl md:text-2xl font-bold tracking-tight mb-0.5 text-white">Mission Control</h1>
+                    <p className="text-secondary text-xs md:text-sm">Select a target for autonomous remediation.</p>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    {/* Auth info badge */}
+                <div className="flex items-center gap-2">
+                    {/* Auth info badge — icon-only on mobile */}
                     {userName && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-xs text-white">
+                        <div className="flex items-center gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-white/5 rounded-full border border-white/10 text-xs text-white" title={userName}>
                             {userAvatar ? (
-                                <img src={userAvatar} alt="" className="w-4 h-4 rounded-full" />
+                                <img src={userAvatar} alt="" className="w-5 h-5 rounded-full ring-1 ring-white/20" />
                             ) : (
-                                <User className="w-3 h-3" />
+                                <User className="w-3.5 h-3.5" />
                             )}
-                            {userName}
+                            <span className="hidden md:inline truncate max-w-[100px]">{userName}</span>
                         </div>
                     )}
 
-                    {/* GitHub connection status badge */}
+                    {/* GitHub connection — icon + green dot on mobile */}
                     {githubConnected && (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 rounded-full border border-green-500/20 text-xs text-green-400">
-                            <CheckCircle2 className="w-3 h-3" />
-                            GitHub Connected
+                        <div className="flex items-center gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-green-500/10 rounded-full border border-green-500/20 text-xs text-green-400" title={githubUser?.login ? `@${githubUser.login}` : 'GitHub Connected'}>
+                            <div className="relative">
+                                <Github className="w-3.5 h-3.5" />
+                                <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                            </div>
+                            <span className="hidden md:inline">Connected</span>
                             {githubUser?.login && (
-                                <span className="text-green-500/60 ml-0.5">@{githubUser.login}</span>
+                                <span className="hidden lg:inline text-green-500/60">@{githubUser.login}</span>
                             )}
                         </div>
                     )}
@@ -250,107 +253,110 @@ export default function Dashboard() {
             )}
 
             {/* Input Configuration Panel */}
-            <div className="bg-surface p-1 rounded-2xl border border-white/5 shadow-2xl">
-                <div className="bg-black/50 p-4 md:p-6 rounded-xl space-y-4 md:space-y-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                                <Terminal className="w-5 h-5 text-primary" />
+            <div className="bg-surface p-0.5 md:p-1 rounded-xl md:rounded-2xl border border-white/5 shadow-2xl">
+                <div className="bg-black/50 p-3 md:p-5 rounded-lg md:rounded-xl space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-primary/10 rounded-lg">
+                                <Terminal className="w-4 h-4 text-primary" />
                             </div>
-                            <h2 className="text-lg font-semibold text-white">Target Configuration</h2>
+                            <h2 className="text-sm md:text-base font-semibold text-white">Target Configuration</h2>
                         </div>
 
                         {/* GitHub actions (when connected) */}
                         {githubConnected && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
                                 <button
                                     onClick={handleRefreshRepos}
                                     disabled={loading}
-                                    className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 text-secondary hover:text-white px-3 py-1.5 rounded-lg border border-white/10 transition-colors text-xs"
+                                    className="flex items-center gap-1 bg-white/5 hover:bg-white/10 text-secondary hover:text-white p-1.5 md:px-2.5 md:py-1 rounded-md border border-white/10 transition-colors text-[11px]"
+                                    title="Refresh Repos"
                                 >
                                     <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
-                                    Refresh Repos
+                                    <span className="hidden md:inline">Refresh</span>
                                 </button>
                                 <button
                                     onClick={handleDisconnectGithub}
-                                    className="flex items-center gap-1.5 text-secondary hover:text-red-400 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors text-xs"
+                                    className="flex items-center gap-1 text-secondary hover:text-red-400 p-1.5 md:px-2.5 md:py-1 rounded-md hover:bg-white/5 transition-colors text-[11px]"
+                                    title="Disconnect GitHub"
                                 >
                                     <Unplug className="w-3 h-3" />
-                                    Disconnect
+                                    <span className="hidden md:inline">Disconnect</span>
                                 </button>
                             </div>
                         )}
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4">
-                        <div className="relative group">
-                            <label className="text-xs font-mono text-secondary uppercase mb-1 block pl-1">
-                                Git Repository URL
-                            </label>
-                            <div className="relative">
-                                <LinkIcon className="absolute left-3 md:left-4 top-2.5 md:top-3 w-4 h-4 text-secondary/50 group-focus-within:text-primary transition-colors" />
+                    <div className="border-t border-white/5 pt-3">
+                        <div className="space-y-3">
+                            <div className="relative group">
+                                <label className="text-[10px] md:text-xs font-mono text-secondary uppercase mb-1 block pl-1">
+                                    Git Repository URL
+                                </label>
+                                <div className="relative">
+                                    <LinkIcon className="absolute left-3 top-2.5 w-3.5 h-3.5 text-secondary/50 group-focus-within:text-primary transition-colors" />
+                                    <input
+                                        type="text"
+                                        placeholder="https://github.com/username/repository"
+                                        className="w-full bg-background border border-white/10 rounded-lg pl-9 pr-3 py-2 md:py-2.5 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all font-mono text-xs md:text-sm"
+                                        value={repoUrl}
+                                        onChange={(e) => setRepoUrl(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Commit Message Template */}
+                            <div className="relative group">
+                                <label className="text-[10px] md:text-xs font-mono text-secondary uppercase mb-1 pl-1 flex items-center gap-1.5">
+                                    <MessageSquare className="w-3 h-3" /> Auto-Commit Message
+                                </label>
                                 <input
                                     type="text"
-                                    placeholder="https://github.com/username/repository"
-                                    className="w-full bg-background border border-white/10 rounded-lg pl-9 md:pl-10 pr-4 py-2.5 md:py-3 text-white focus:outline-none focus:border-primary transition-all font-mono text-sm shadow-inner"
-                                    value={repoUrl}
-                                    onChange={(e) => setRepoUrl(e.target.value)}
+                                    placeholder="Fixed {issues_count} issues by GitFixAI"
+                                    className="w-full bg-background border border-white/10 rounded-lg px-3 py-2 md:py-2.5 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all text-xs md:text-sm"
+                                    value={commitMsg}
+                                    onChange={(e) => setCommitMsg(e.target.value)}
                                 />
+                                <div className="flex items-center gap-1 mt-1 text-[10px] text-white/20">
+                                    <Eye className="w-2.5 h-2.5" />
+                                    <span className="truncate">Preview: {commitMsg.replace('{issues_count}', '12').replace('{files_changed}', '5').replace('{score}', '94')}</span>
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Commit Message Template */}
-                        <div className="relative group">
-                            <label className="text-xs font-mono text-secondary uppercase mb-1 pl-1 flex items-center gap-1.5">
-                                <MessageSquare className="w-3 h-3" /> Auto-Commit Message
-                            </label>
-                            <input
-                                type="text"
-                                placeholder="Fixed {issues_count} issues by GitFixAI"
-                                className="w-full bg-background border border-white/10 rounded-lg px-4 py-2.5 md:py-3 text-white focus:outline-none focus:border-primary transition-all text-sm"
-                                value={commitMsg}
-                                onChange={(e) => setCommitMsg(e.target.value)}
-                            />
-                            {/* Live preview */}
-                            <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-white/30">
-                                <Eye className="w-3 h-3" />
-                                <span>Preview: {commitMsg.replace('{issues_count}', '12').replace('{files_changed}', '5').replace('{score}', '94')}</span>
-                            </div>
-                        </div>
-
-                        {/* Auto-Fix Preferences */}
-                        <div>
-                            <label className="text-xs font-mono text-secondary uppercase mb-2 block pl-1">Auto-Fix Preferences</label>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                {[
-                                    { key: 'syntax', label: 'Syntax', icon: <Pencil className="w-3.5 h-3.5" /> },
-                                    { key: 'imports', label: 'Imports', icon: <Package className="w-3.5 h-3.5" /> },
-                                    { key: 'formatting', label: 'Formatting', icon: <Palette className="w-3.5 h-3.5" /> },
-                                    { key: 'security', label: 'Security', icon: <Lock className="w-3.5 h-3.5" /> },
-                                ].map(({ key, label, icon }) => (
-                                    <button
-                                        key={key}
-                                        type="button"
-                                        onClick={() => setAutoFix(prev => ({ ...prev, [key]: !prev[key] }))}
-                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-all cursor-pointer ${autoFix[key]
-                                            ? 'bg-primary/10 border-primary/30 text-white'
-                                            : 'bg-white/2 border-white/10 text-white/40 hover:bg-white/5'
-                                            }`}
-                                    >
-                                        <span className="opacity-70">{icon}</span>
-                                        <span>{label}</span>
-                                        <div className={`ml-auto w-3 h-3 rounded-full transition-colors ${autoFix[key] ? 'bg-primary' : 'bg-white/10'
-                                            }`} />
-                                    </button>
-                                ))}
+                            {/* Auto-Fix Preferences */}
+                            <div>
+                                <label className="text-[10px] md:text-xs font-mono text-secondary uppercase mb-1.5 block pl-1">Auto-Fix Preferences</label>
+                                <div className="grid grid-cols-2 gap-1.5 md:gap-2">
+                                    {[
+                                        { key: 'syntax', label: 'Syntax', icon: <Pencil className="w-3.5 h-3.5" /> },
+                                        { key: 'imports', label: 'Imports', icon: <Package className="w-3.5 h-3.5" /> },
+                                        { key: 'formatting', label: 'Formatting', icon: <Palette className="w-3.5 h-3.5" /> },
+                                        { key: 'security', label: 'Security', icon: <Lock className="w-3.5 h-3.5" /> },
+                                    ].map(({ key, label, icon }) => (
+                                        <button
+                                            key={key}
+                                            type="button"
+                                            onClick={() => setAutoFix(prev => ({ ...prev, [key]: !prev[key] }))}
+                                            className={`flex items-center gap-1.5 px-2.5 py-1.5 md:py-2 rounded-lg border text-[11px] md:text-xs font-medium transition-all cursor-pointer ${autoFix[key]
+                                                ? 'bg-primary/10 border-primary/30 text-white'
+                                                : 'bg-white/2 border-white/10 text-white/40 hover:bg-white/5'
+                                                }`}
+                                        >
+                                            <span className="opacity-70">{icon}</span>
+                                            <span>{label}</span>
+                                            <div className={`ml-auto w-3 h-3 rounded-full transition-colors ${autoFix[key] ? 'bg-primary' : 'bg-white/10'
+                                                }`} />
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="pt-2">
+                    <div className="border-t border-white/5 pt-3">
                         <button
                             onClick={startAnalysis}
-                            className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-blue-500 hover:to-blue-600 text-white font-bold rounded-lg py-3 md:py-4 transition-all active:scale-[0.99] flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 group text-sm md:text-base"
+                            className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-blue-500 hover:to-blue-600 text-white font-bold rounded-lg py-2.5 md:py-3 transition-all active:scale-[0.99] flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 group text-xs md:text-sm"
                         >
                             Initialize Agent{' '}
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
