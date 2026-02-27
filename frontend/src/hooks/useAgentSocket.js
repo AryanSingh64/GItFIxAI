@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { getWsUrl } from '../lib/api';
 
 export function useAgentSocket() {
@@ -10,6 +10,9 @@ export function useAgentSocket() {
     const [testResults, setTestResults] = useState(null);
     const [langStats, setLangStats] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
+
+    // Generate a unique session ID for this analysis session
+    const sessionId = useMemo(() => `s_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, []);
 
     const ws = useRef(null);
     const mounted = useRef(true);
@@ -26,8 +29,8 @@ export function useAgentSocket() {
             return;
         }
 
-        const wsUrl = getWsUrl();
-        console.log(`WebSocket: connecting to ${wsUrl} (attempt ${retryCount.current + 1})...`);
+        const wsUrl = getWsUrl() + '/' + sessionId;
+        console.log(`WebSocket: connecting to ${wsUrl} (session: ${sessionId}, attempt ${retryCount.current + 1})...`);
 
         try {
             ws.current = new WebSocket(wsUrl);
@@ -113,6 +116,7 @@ export function useAgentSocket() {
     return {
         logs, stages, diffs, result, prUrl,
         testResults, langStats,
-        clearAll, isConnected, startConnection
+        clearAll, isConnected, startConnection,
+        sessionId
     };
 }

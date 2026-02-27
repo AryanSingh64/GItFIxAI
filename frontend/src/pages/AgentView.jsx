@@ -478,7 +478,8 @@ export default function AgentView() {
     const {
         logs, stages, diffs, result, prUrl,
         testResults, langStats,
-        clearAll, isConnected, startConnection
+        clearAll, isConnected, startConnection,
+        sessionId
     } = useAgentSocket();
     const logsEndRef = useRef(null);
 
@@ -526,6 +527,7 @@ export default function AgentView() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         repo_url: repoUrl,
+                        session_id: sessionId,
                         commit_msg: commitMsg || 'Fixed {issues_count} issues in {files_changed} files',
                         access_token: accessToken
                     })
