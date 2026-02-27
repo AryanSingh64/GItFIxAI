@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import Landing from './pages/Landing';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
@@ -21,6 +22,7 @@ function App() {
           <Route path="/history" element={<History />} />
         </Route>
       </Routes>
+      <Analytics />
     </Router>
   );
 }
