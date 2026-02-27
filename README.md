@@ -74,32 +74,23 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ## <img src="./assets/icons/camera.svg" width="22"/> Demo
 
-<!-- 
-  HOW TO ADD VIDEOS:
-  1. Go to https://github.com/AryanSingh64/GItFIxAI/issues/new
-  2. Drag & drop each MP4 file from assets/demo/ into the text box
-  3. GitHub will generate URLs like: https://github.com/user-attachments/assets/xxxxxxxx
-  4. Copy those URLs and paste them below (replace the placeholder links)
-  5. Close the issue without saving — the URLs still work permanently
--->
-
 <div align="center">
 
 ### Landing Page
 
-https://github.com/AryanSingh64/GItFIxAI/raw/main/assets/demo/landing1.mp4
+https://github.com/AryanSingh64/GItFIxAI/blob/main/assets/demo/landing1.mp4
 
 ### Dashboard
 
-https://github.com/AryanSingh64/GItFIxAI/raw/main/assets/demo/dashboard.mp4
+https://github.com/AryanSingh64/GItFIxAI/blob/main/assets/demo/dashboard.mp4
 
 ### Live Analysis
 
-https://github.com/AryanSingh64/GItFIxAI/raw/main/assets/demo/analysis.mp4
+https://github.com/AryanSingh64/GItFIxAI/blob/main/assets/demo/analysis.mp4
 
 ### Results
 
-https://github.com/AryanSingh64/GItFIxAI/raw/main/assets/demo/result.mp4
+https://github.com/AryanSingh64/GItFIxAI/blob/main/assets/demo/result.mp4
 
 </div>
 
