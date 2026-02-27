@@ -72,30 +72,23 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
-## <img src="./assets/icons/camera.svg" width="22"/> Screenshots
+## <img src="./assets/icons/camera.svg" width="22"/> Demo
 
 <div align="center">
-  <table>
-    <tr>
-      <td align="center"><strong>Landing Page</strong></td>
-      <td align="center"><strong>Dashboard</strong></td>
-    </tr>
-    <tr>
-      <td><img src="./assets/demo/landing.png" alt="Landing Page" width="400"/></td>
-      <td><img src="./assets/demo/dashboard.png" alt="Dashboard" width="400"/></td>
-    </tr>
-    <tr>
-      <td align="center"><strong>Live Analysis</strong></td>
-      <td align="center"><strong>Results</strong></td>
-    </tr>
-    <tr>
-      <td><img src="./assets/demo/agent.png" alt="Agent View" width="400"/></td>
-      <td><img src="./assets/demo/results.png" alt="Results" width="400"/></td>
-    </tr>
-  </table>
-</div>
 
-> Add your screenshots to `assets/demo/` — name them `landing.png`, `dashboard.png`, `agent.png`, `results.png`
+### Landing Page
+<video src="https://github.com/AryanSingh64/GItFIxAI/raw/main/frontend/public/landing1.mp4" width="720" controls autoplay muted loop></video>
+
+### Dashboard
+<video src="https://github.com/AryanSingh64/GItFIxAI/raw/main/frontend/public/dashboard.mp4" width="720" controls autoplay muted loop></video>
+
+### Live Analysis
+<video src="https://github.com/AryanSingh64/GItFIxAI/raw/main/frontend/public/analysis.mp4" width="720" controls autoplay muted loop></video>
+
+### Results
+<video src="https://github.com/AryanSingh64/GItFIxAI/raw/main/frontend/public/result.mp4" width="720" controls autoplay muted loop></video>
+
+</div>
 
 ---
 
