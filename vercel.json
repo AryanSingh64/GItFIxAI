@@ -1,0 +1,17 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/(.*)",
+            "destination": "/backend/api/index.py"
+        },
+        {
+            "source": "/((?!api/.*).*)",
+            "destination": "/frontend/index.html"
+        }
+    ],
+    "functions": {
+        "backend/api/index.py": {
+            "maxDuration": 60
+        }
+    }
+}

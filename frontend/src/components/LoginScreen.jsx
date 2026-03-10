@@ -1,13 +1,9 @@
-import { Github } from 'lucide-react';
+import { Github, Mail } from 'lucide-react';
 import React from 'react';
-
-const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID || "Ov23liktz8bz4X5bMsds";
+import { useNavigate } from 'react-router-dom';
 
 export default function LoginScreen() {
-    const handleLogin = () => {
-        const REDIRECT_URI = `${window.location.origin}/dashboard`;
-        window.location.href = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=repo`;
-    };
+    const navigate = useNavigate();
 
     return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8">
@@ -19,15 +15,15 @@ export default function LoginScreen() {
             </div>
 
             <button
-                onClick={handleLogin}
+                onClick={() => navigate('/auth')}
                 className="flex items-center gap-3 bg-white text-black px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-200 transition-all shadow-xl hover:shadow-white/20 active:scale-95"
             >
-                <Github className="w-6 h-6" />
-                Connect with GitHub
+                <Mail className="w-6 h-6" />
+                Sign In to Get Started
             </button>
 
             <div className="text-xs text-secondary mt-8">
-                By connecting, you authorize the agent to read your repositories.
+                Sign in with Email, Google, or GitHub to access your repositories.
             </div>
         </div>
     );
