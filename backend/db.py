@@ -11,7 +11,7 @@ def get_supabase_client():
     try:
         from supabase import create_client
     except ImportError:
-        print("⚠️  supabase-py not installed. DB features disabled.")
+        print("[WARN] supabase-py not installed. DB features disabled.")
         return None
 
     url = os.getenv("SUPABASE_URL")
@@ -50,7 +50,7 @@ async def save_analysis_run(run_data: dict):
             return result.data[0].get("id")
         return None
     except Exception as e:
-        print(f"⚠️  Failed to save analysis run to DB: {e}")
+        print(f"[WARN] Failed to save analysis run to DB: {e}")
         return None
 
 
@@ -78,7 +78,7 @@ async def save_file_fixes(run_id, fixes: list):
         if records:
             client.table("file_fixes").insert(records).execute()
     except Exception as e:
-        print(f"⚠️  Failed to save file fixes to DB: {e}")
+        print(f"[WARN] Failed to save file fixes to DB: {e}")
 
 
 async def get_user_runs(user_email: str = None, limit: int = 20):
@@ -95,5 +95,5 @@ async def get_user_runs(user_email: str = None, limit: int = 20):
         result = query.execute()
         return result.data if result.data else []
     except Exception as e:
-        print(f"⚠️  Failed to fetch runs from DB: {e}")
+        print(f"[WARN] Failed to fetch runs from DB: {e}")
         return []

@@ -1,16 +1,29 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const rawUrl = import.meta.env.VITE_SUPABASE_URL;
+const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('⚠️ Supabase credentials not set. Auth will not work.');
+const isValidUrl = (url) => {
+    return url && (url.startsWith('http://') || url.startsWith('https://'));
+};
+
+const isPlaceholder = (val) => {
+    return !val || val.includes('placeholder') || val.includes('your-supabase');
+};
+
+const supabaseUrl = isValidUrl(rawUrl) && !isPlaceholder(rawUrl)
+    ? rawUrl
+    : 'https://placeholder.supabase.co';
+
+const supabaseAnonKey = rawKey && !isPlaceholder(rawKey)
+    ? rawKey
+    : 'placeholder-key';
+
+if (isPlaceholder(rawUrl) || isPlaceholder(rawKey) || !isValidUrl(rawUrl)) {
+    console.warn('⚠️ Supabase credentials not set or invalid. Auth will not work.');
 }
 
-export const supabase = createClient(
-    supabaseUrl || 'https://placeholder.supabase.co',
-    supabaseAnonKey || 'placeholder-key'
-);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // ─── Email/Password Auth ────────────────────────────────────────────────
 

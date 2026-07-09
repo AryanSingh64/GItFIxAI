@@ -40,16 +40,11 @@ export default function Dashboard() {
                     const API_URL = getApiUrl();
                     const response = await fetch(`${API_URL}/auth/github`, {
                         method: 'POST',
-<<<<<<< HEAD
                         headers: {
                             'Content-Type': 'application/json',
                             'ngrok-skip-browser-warning': 'true'
                         },
                         body: JSON.stringify({ code })
-=======
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code }),
->>>>>>> upstream/main
                     });
 
                     if (!response.ok) {

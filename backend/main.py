@@ -38,21 +38,21 @@ def validate_env():
     missing = []
     for var, desc in required.items():
         if not os.getenv(var):
-            missing.append(f"  ❌ {var} — {desc}")
+            missing.append(f"  [X] {var} - {desc}")
     for var, desc in optional_warn.items():
         if not os.getenv(var):
-            print(f"  ⚠️  {var} not set — {desc}")
+            print(f"  [WARN] {var} not set - {desc}")
     if missing:
-        print("\n🚨 MISSING REQUIRED ENV VARIABLES:")
+        print("\n[ERROR] MISSING REQUIRED ENV VARIABLES:")
         print("\n".join(missing))
         print("\nSet these in your .env file or environment. Exiting.\n")
         sys.exit(1)
-    print("✅ Environment validation passed")
+    print("[OK] Environment validation passed")
 
 validate_env()
 
 
-app = FastAPI(title="GitFixAI — Autonomous CI/CD Healing Agent")
+app = FastAPI(title="GitFixAI - Autonomous CI/CD Healing Agent")
 
 
 # ═══ SECURITY HEADERS MIDDLEWARE ═══
