@@ -55,7 +55,13 @@ function AuthForm() {
       await signInWithEmail(email, password);
       router.push('/dashboard');
     } catch (err) {
-      showMsg('error', err.message || 'Login failed. Check your credentials.');
+      if (err.code === 'auth/operation-not-allowed') {
+        showMsg('error', 'Email/Password sign-in is not enabled in Firebase Console. Go to Authentication > Sign-in method > Email/Password and toggle it ON.');
+      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+        showMsg('error', 'Invalid email or password. Please check your credentials.');
+      } else {
+        showMsg('error', err.message || 'Login failed.');
+      }
     } finally {
       setLoading(false);
     }
@@ -69,10 +75,18 @@ function AuthForm() {
     setLoading(true);
     try {
       await signUpWithEmail(email, password, fullName);
-      showMsg('success', '🎉 Account created! Redirecting...');
+      showMsg('success', '🎉 Account created! Redirecting to Mission Control...');
       setTimeout(() => router.push('/dashboard'), 1000);
     } catch (err) {
-      showMsg('error', err.message || 'Sign up failed.');
+      if (err.code === 'auth/operation-not-allowed') {
+        showMsg('error', 'Email/Password sign-up is not enabled in Firebase Console. Go to Authentication > Sign-in method > Email/Password and toggle it ON.');
+      } else if (err.code === 'auth/email-already-in-use') {
+        showMsg('error', 'An account already exists with this email address. Please sign in instead.');
+      } else if (err.code === 'auth/weak-password') {
+        showMsg('error', 'Password is too weak. Please use at least 6 characters.');
+      } else {
+        showMsg('error', err.message || 'Sign up failed.');
+      }
     } finally {
       setLoading(false);
     }
