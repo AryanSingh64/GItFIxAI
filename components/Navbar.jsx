@@ -6,6 +6,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import { LogOut, ArrowLeft, Terminal, LayoutDashboard, User, ChevronDown, History, BookOpen, Activity } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
+import BrandLogo from '@/components/BrandLogo';
+
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
@@ -34,12 +36,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 h-14 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/dashboard" className="flex items-center gap-2.5 group">
-            {/* Geometric vortex glyph from Image 1 */}
-            <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-center group-hover:border-white/20 transition-colors">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2a10 10 0 0 1 10 10c0 4.418-2.865 8.167-6.84 9.47M12 22A10 10 0 0 1 2 12C2 7.582 4.865 3.833 8.84 2.53" strokeLinecap="round" />
-                <circle cx="12" cy="12" r="3" fill="currentColor" fillOpacity="0.4" />
-              </svg>
+            {/* Geometric vortex glyph matching reference */}
+            <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-center group-hover:border-white/20 transition-colors p-1">
+              <BrandLogo size={24} />
             </div>
             <span className="font-semibold tracking-tight text-white text-sm">
               GitFix<span className="text-white/40 font-normal">AI</span>

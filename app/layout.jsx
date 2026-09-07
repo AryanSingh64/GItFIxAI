@@ -5,7 +5,9 @@ export const metadata = {
   title: 'GitFixAI — Autonomous CI/CD Healing Agent',
   description: 'Autonomous multi-language code analysis agent that repairs bugs, cures broken CI pipelines, and opens verified GitHub Pull Requests.',
   icons: {
-    icon: '/favicon.svg'
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/logo.svg'
   }
 };
 

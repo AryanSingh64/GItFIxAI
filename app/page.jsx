@@ -23,6 +23,7 @@ import {
   FileCode,
   Check
 } from 'lucide-react';
+import BrandLogo from '@/components/BrandLogo';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -163,9 +164,7 @@ export default function LandingPage() {
           {/* Logo Glyph (left) - abstract vortex spiral matching reference */}
           <Link href="/" className="group flex items-center">
             <div className="w-10 h-10 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-              <svg viewBox="0 0 32 32" className="w-8 h-8 text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.15)]" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <path d="M7 16 C 7 10, 16 9, 21 13 C 25 16, 25 22, 19 23 C 14 24, 11 20, 14 17 C 17 14, 23 15, 25 16" strokeLinecap="round" />
-              </svg>
+              <BrandLogo size={32} />
             </div>
           </Link>
 
@@ -647,9 +646,7 @@ export default function LandingPage() {
           <div className="flex items-baseline gap-4 w-full">
             {/* Logo glyph */}
             <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 shrink-0 flex items-center justify-center">
-              <svg viewBox="0 0 32 32" className="w-full h-full text-white" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <path d="M7 16 C 7 10, 16 9, 21 13 C 25 16, 25 22, 19 23 C 14 24, 11 20, 14 17 C 17 14, 23 15, 25 16" strokeLinecap="round" />
-              </svg>
+              <BrandLogo size={64} />
             </div>
             
             {/* Giant "gitfix" text filling screen width */}

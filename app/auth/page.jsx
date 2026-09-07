@@ -14,6 +14,7 @@ import {
 } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
+import BrandLogo from '@/components/BrandLogo';
 
 const TABS = {
   LOGIN: 'login',
@@ -162,27 +163,15 @@ function AuthForm() {
       <div className="w-full max-w-md relative z-10">
         {/* Brand */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5 mb-3 group">
-            <div className="bg-gradient-to-br from-[#0066ff]/20 to-[#7c3aed]/20 p-2 rounded-xl border border-white/10 group-hover:border-[#7c3aed]/50 transition-colors">
-              <svg viewBox="0 0 120 120" className="w-6 h-6">
-                <circle cx="60" cy="32" r="16" fill="#24292e" />
-                <circle cx="54" cy="30" r="4" fill="white" />
-                <circle cx="66" cy="30" r="4" fill="white" />
-                <circle cx="55" cy="30" r="2" fill="#0d1117" />
-                <circle cx="67" cy="30" r="2" fill="#0d1117" />
-                <path d="M55 37 Q60 42 65 37" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                <ellipse cx="60" cy="52" rx="18" ry="20" fill="#24292e" />
-                <circle cx="46" cy="22" r="5" fill="#24292e" />
-                <circle cx="74" cy="22" r="5" fill="#24292e" />
-              </svg>
+          <Link href="/" className="inline-flex items-center gap-3 mb-3 group">
+            <div className="p-2.5 rounded-2xl bg-white/[0.04] border border-white/10 group-hover:border-white/20 transition-colors shadow-lg">
+              <BrandLogo size={28} />
             </div>
-            <span className="font-bold tracking-tight text-white text-xl">
-              <span className="font-normal">Git</span>
-              <span className="font-bold">Fix</span>
-              <span className="font-bold bg-gradient-to-r from-[#0066ff] to-[#7c3aed] bg-clip-text text-transparent">AI</span>
+            <span className="font-semibold tracking-tight text-white text-xl">
+              GitFix<span className="text-white/40 font-normal">AI</span>
             </span>
           </Link>
-          <p className="text-secondary text-xs">Autonomous CI/CD Healing Platform</p>
+          <p className="text-slate-400 text-xs font-mono">Autonomous code remediation platform</p>
         </div>
 
         {/* Card Container */}
