@@ -75,7 +75,7 @@ function AuthForm() {
     setLoading(true);
     try {
       await signUpWithEmail(email, password, fullName);
-      showMsg('success', '🎉 Account created! Redirecting to Mission Control...');
+      showMsg('success', 'Account created. Redirecting to Mission Control...');
       setTimeout(() => router.push('/dashboard'), 1000);
     } catch (err) {
       if (err.code === 'auth/operation-not-allowed') {
@@ -98,7 +98,7 @@ function AuthForm() {
     setLoading(true);
     try {
       await resetPassword(email);
-      showMsg('success', '📧 Password reset link sent! Check your email inbox.');
+      showMsg('success', 'Password reset link sent. Check your email inbox.');
     } catch (err) {
       showMsg('error', err.message || 'Failed to send reset email.');
     } finally {

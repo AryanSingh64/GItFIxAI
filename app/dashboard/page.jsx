@@ -227,155 +227,148 @@ function DashboardContent() {
 
           {/* GitHub Connection Card - shown when GitHub is NOT connected */}
           {!githubConnected && (
-            <div className="bg-surface p-1 rounded-2xl border border-white/5 shadow-2xl">
-              <div className="bg-black/50 p-8 rounded-xl text-center">
-                <div className="inline-flex p-4 bg-white/5 rounded-2xl mb-5 border border-white/5">
-                  <Github className="w-8 h-8 text-white" />
-                </div>
-                <h2 className="text-xl font-bold text-white mb-2">Connect Your GitHub Account</h2>
-                <p className="text-secondary text-sm max-w-lg mx-auto mb-6">
-                  Connect your GitHub account to import repositories and enable the AI agent to push automated fixes.
-                  This is separate from your login method — you can be logged in with {authProvider === 'google' ? 'Google' : 'email'} and still connect GitHub.
-                </p>
-                <button
-                  onClick={handleConnectGithub}
-                  className="inline-flex items-center gap-3 bg-white text-black font-bold px-8 py-3.5 rounded-xl hover:bg-gray-200 transition-all active:scale-[0.97] shadow-lg shadow-white/10 cursor-pointer"
-                >
-                  <Github className="w-5 h-5" />
-                  Connect GitHub Account
-                </button>
-                <p className="text-xs text-zinc-600 mt-4">
-                  Grants read/write access to your selected repositories.
-                </p>
+            <div className="rounded-2xl bg-[#0c0e17] border border-white/[0.08] p-8 text-center shadow-2xl">
+              <div className="inline-flex p-3.5 bg-white/[0.04] border border-white/10 rounded-2xl mb-4">
+                <Github className="w-7 h-7 text-white" />
               </div>
+              <h2 className="text-xl font-semibold text-white mb-2">Connect GitHub Account</h2>
+              <p className="text-slate-400 text-xs md:text-sm max-w-lg mx-auto mb-6 leading-relaxed">
+                Connect your GitHub account to import repositories and enable automated remediation PRs.
+                Works seamlessly whether signed in with {authProvider === 'google' ? 'Google' : 'email'}.
+              </p>
+              <button
+                onClick={handleConnectGithub}
+                className="inline-flex items-center gap-2.5 bg-white text-black font-semibold text-xs md:text-sm px-6 py-3 rounded-xl hover:bg-slate-200 transition-all active:scale-[0.98] cursor-pointer"
+              >
+                <Github className="w-4 h-4" />
+                Connect GitHub
+              </button>
             </div>
           )}
 
           {/* OR divider when not connected */}
           {!githubConnected && (
             <div className="flex items-center gap-4 my-2">
-              <div className="flex-1 h-px bg-white/10" />
-              <span className="text-xs text-secondary uppercase tracking-widest">or enter a url manually</span>
-              <div className="flex-1 h-px bg-white/10" />
+              <div className="flex-1 h-px bg-white/[0.06]" />
+              <span className="text-[11px] font-mono text-slate-500 uppercase tracking-widest">or specify repository url</span>
+              <div className="flex-1 h-px bg-white/[0.06]" />
             </div>
           )}
 
           {/* Input Configuration Panel */}
-          <div className="bg-surface p-0.5 md:p-1 rounded-xl md:rounded-2xl border border-white/5 shadow-2xl">
-            <div className="bg-black/50 p-3 md:p-5 rounded-lg md:rounded-xl space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-primary/10 rounded-lg">
-                    <Terminal className="w-4 h-4 text-primary" />
+          <div className="rounded-2xl bg-[#0c0e17] border border-white/[0.08] p-5 md:p-6 shadow-2xl">
+            <div className="space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 bg-white/[0.04] border border-white/10 rounded-lg">
+                    <Terminal className="w-4 h-4 text-lime-400" />
                   </div>
                   <h2 className="text-sm md:text-base font-semibold text-white">Target Configuration</h2>
                 </div>
 
                 {/* GitHub actions (when connected) */}
                 {githubConnected && (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     <button
                       onClick={handleRefreshRepos}
                       disabled={loading}
-                      className="flex items-center gap-1 bg-white/5 hover:bg-white/10 text-secondary hover:text-white p-1.5 md:px-2.5 md:py-1 rounded-md border border-white/10 transition-colors text-[11px] cursor-pointer"
+                      className="flex items-center gap-1.5 bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg border border-white/[0.08] transition-colors text-xs cursor-pointer font-mono"
                       title="Refresh Repos"
                     >
                       <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
-                      <span className="hidden md:inline">Refresh</span>
+                      <span>Refresh</span>
                     </button>
                     <button
                       onClick={handleDisconnectGithub}
-                      className="flex items-center gap-1 text-secondary hover:text-red-400 p-1.5 md:px-2.5 md:py-1 rounded-md hover:bg-white/5 transition-colors text-[11px] cursor-pointer"
+                      className="flex items-center gap-1.5 text-slate-400 hover:text-rose-400 px-2.5 py-1.5 rounded-lg hover:bg-white/[0.03] transition-colors text-xs cursor-pointer font-mono"
                       title="Disconnect GitHub"
                     >
                       <Unplug className="w-3 h-3" />
-                      <span className="hidden md:inline">Disconnect</span>
+                      <span>Disconnect</span>
                     </button>
                   </div>
                 )}
               </div>
 
-              <div className="border-t border-white/5 pt-3">
-                <div className="space-y-3">
-                  <div className="relative group">
-                    <label className="text-[10px] md:text-xs font-mono text-secondary uppercase mb-1 block pl-1">
-                      Git Repository URL
-                    </label>
-                    <div className="relative">
-                      <LinkIcon className="absolute left-3 top-2.5 w-3.5 h-3.5 text-secondary/50 group-focus-within:text-primary transition-colors" />
-                      <input
-                        type="text"
-                        placeholder="https://github.com/username/repository"
-                        className="w-full bg-background border border-white/10 rounded-lg pl-9 pr-3 py-2 md:py-2.5 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all font-mono text-xs md:text-sm"
-                        value={repoUrl}
-                        onChange={(e) => setRepoUrl(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Commit Message Template */}
-                  <div className="relative group">
-                    <label className="text-[10px] md:text-xs font-mono text-secondary uppercase mb-1 pl-1 flex items-center gap-1.5">
-                      <MessageSquare className="w-3 h-3" /> Auto-Commit Message
-                    </label>
+              <div className="space-y-4">
+                <div className="relative group">
+                  <label className="text-[10px] md:text-xs font-mono text-slate-400 uppercase mb-1.5 block">
+                    Git Repository URL
+                  </label>
+                  <div className="relative">
+                    <LinkIcon className="absolute left-3.5 top-3 w-3.5 h-3.5 text-slate-500 group-focus-within:text-white transition-colors" />
                     <input
                       type="text"
-                      placeholder="Fixed {issues_count} issues by GitFixAI"
-                      className="w-full bg-background border border-white/10 rounded-lg px-3 py-2 md:py-2.5 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all text-xs md:text-sm"
-                      value={commitMsg}
-                      onChange={(e) => setCommitMsg(e.target.value)}
+                      placeholder="https://github.com/username/repository"
+                      className="w-full bg-[#131622] border border-white/[0.08] rounded-xl pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-white/25 transition-all font-mono text-xs md:text-sm"
+                      value={repoUrl}
+                      onChange={(e) => setRepoUrl(e.target.value)}
                     />
-                    <div className="flex items-center gap-1 mt-1 text-[10px] text-white/20">
-                      <Eye className="w-2.5 h-2.5" />
-                      <span className="truncate">Preview: {commitMsg.replace('{issues_count}', '12').replace('{files_changed}', '5').replace('{score}', '94')}</span>
-                    </div>
                   </div>
+                </div>
 
-                  {/* Auto-Fix Preferences */}
-                  <div>
-                    <label className="text-[10px] md:text-xs font-mono text-secondary uppercase mb-1.5 block pl-1">Auto-Fix Preferences</label>
-                    <div className="grid grid-cols-2 gap-1.5 md:gap-2">
-                      {[
-                        { key: 'syntax', label: 'Syntax', icon: <Pencil className="w-3.5 h-3.5" /> },
-                        { key: 'imports', label: 'Imports', icon: <Package className="w-3.5 h-3.5" /> },
-                        { key: 'formatting', label: 'Formatting', icon: <Palette className="w-3.5 h-3.5" /> },
-                        { key: 'security', label: 'Security', icon: <Lock className="w-3.5 h-3.5" /> },
-                      ].map(({ key, label, icon }) => (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => setAutoFix(prev => ({ ...prev, [key]: !prev[key] }))}
-                          className={`flex items-center gap-1.5 px-2.5 py-1.5 md:py-2 rounded-lg border text-[11px] md:text-xs font-medium transition-all cursor-pointer ${
-                            autoFix[key]
-                              ? 'bg-primary/10 border-primary/30 text-white'
-                              : 'bg-white/2 border-white/10 text-white/40 hover:bg-white/5'
-                          }`}
-                        >
-                          <span className="opacity-70">{icon}</span>
-                          <span>{label}</span>
-                          <div className={`ml-auto w-3 h-3 rounded-full transition-colors ${autoFix[key] ? 'bg-primary' : 'bg-white/10'}`} />
-                        </button>
-                      ))}
-                    </div>
+                {/* Commit Message Template */}
+                <div className="relative group">
+                  <label className="text-[10px] md:text-xs font-mono text-slate-400 uppercase mb-1.5 flex items-center gap-1.5">
+                    <MessageSquare className="w-3 h-3" /> Automated PR Commit Message
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Fixed {issues_count} issues by GitFixAI"
+                    className="w-full bg-[#131622] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-white/25 transition-all text-xs md:text-sm font-mono"
+                    value={commitMsg}
+                    onChange={(e) => setCommitMsg(e.target.value)}
+                  />
+                  <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-mono text-slate-500">
+                    <Eye className="w-3 h-3" />
+                    <span className="truncate">Preview: {commitMsg.replace('{issues_count}', '12').replace('{files_changed}', '5').replace('{score}', '94')}</span>
+                  </div>
+                </div>
+
+                {/* Auto-Fix Preferences */}
+                <div>
+                  <label className="text-[10px] md:text-xs font-mono text-slate-400 uppercase mb-2 block">
+                    Remediation Passes
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { key: 'syntax', label: 'Syntax AST', icon: <Pencil className="w-3.5 h-3.5" /> },
+                      { key: 'imports', label: 'Imports', icon: <Package className="w-3.5 h-3.5" /> },
+                      { key: 'formatting', label: 'Formatting', icon: <Palette className="w-3.5 h-3.5" /> },
+                      { key: 'security', label: 'Security', icon: <Lock className="w-3.5 h-3.5" /> },
+                    ].map(({ key, label, icon }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setAutoFix(prev => ({ ...prev, [key]: !prev[key] }))}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
+                          autoFix[key]
+                            ? 'bg-lime-400/10 border-lime-400/30 text-lime-300'
+                            : 'bg-white/[0.02] border-white/[0.07] text-slate-400 hover:bg-white/[0.05]'
+                        }`}
+                      >
+                        <span className="opacity-80">{icon}</span>
+                        <span>{label}</span>
+                        <div className={`ml-auto w-2.5 h-2.5 rounded-full transition-colors ${autoFix[key] ? 'bg-lime-400' : 'bg-white/10'}`} />
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              <div className="border-t border-white/5 pt-3">
+              <div className="border-t border-white/[0.06] pt-4">
                 <button
                   onClick={startAnalysis}
-                  className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-blue-500 hover:to-blue-600 text-white font-bold rounded-lg py-2.5 md:py-3 transition-all active:scale-[0.99] flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 group text-xs md:text-sm cursor-pointer"
+                  className="w-full bg-white text-black hover:bg-slate-200 font-semibold rounded-xl py-3 transition-all active:scale-[0.99] flex items-center justify-center gap-2 text-xs md:text-sm cursor-pointer shadow-lg"
                 >
-                  Initialize Agent{' '}
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <span>Launch Remediation Session</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
 
                 {!githubConnected && (
-                  <div className="flex items-center gap-2 justify-center mt-3">
-                    <AlertCircle className="w-3.5 h-3.5 text-yellow-500/70" />
-                    <span className="text-xs text-yellow-500/70">
-                      GitHub not connected — the agent won't be able to push fixes. You can still scan public repos.
-                    </span>
+                  <div className="flex items-center gap-2 justify-center mt-3 text-[11px] font-mono text-amber-400/80">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>GitHub not connected — scan is read-only unless account is authenticated.</span>
                   </div>
                 )}
               </div>

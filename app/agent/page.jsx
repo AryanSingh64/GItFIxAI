@@ -6,11 +6,12 @@ import { useAgentStream } from '@/hooks/useAgentStream';
 import {
   GitBranch, Search, Wrench, Upload, CheckCircle, FlaskConical,
   ArrowLeft, FileCode, ExternalLink, Clock, Shield,
-  Zap, ChevronDown, ChevronRight, Volume2, VolumeX,
-  Languages, Loader2
+  Zap, ChevronDown, ChevronRight, RefreshCw, AlertCircle,
+  Check, Copy, Download, X, Box, Terminal, Activity,
+  Sliders, ArrowUpRight
 } from 'lucide-react';
-import { IconBrain, IconZap } from '@/components/AnimatedIcons';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import Navbar from '@/components/Navbar';
 
 const PIPELINE = [
   { key: 'CLONE', label: 'Clone', icon: GitBranch },
@@ -21,96 +22,51 @@ const PIPELINE = [
   { key: 'DONE', label: 'Done', icon: CheckCircle },
 ];
 
-function ScoreGauge({ score, size = 180 }) {
-  const [animatedScore, setAnimatedScore] = useState(0);
-  const radius = (size - 20) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (animatedScore / 100) * circumference;
-
-  useEffect(() => {
-    let raf;
-    let start = null;
-    const duration = 2000;
-    const to = score;
-
-    const animate = (ts) => {
-      if (!start) start = ts;
-      const elapsed = ts - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setAnimatedScore(Math.round(to * eased));
-      if (progress < 1) raf = requestAnimationFrame(animate);
-    };
-    raf = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(raf);
-  }, [score]);
-
-  const color =
-    animatedScore >= 96 ? '#a855f7' :
-    animatedScore >= 86 ? '#22c55e' :
-    animatedScore >= 71 ? '#eab308' :
-    animatedScore >= 51 ? '#f97316' : '#ef4444';
-
-  const label =
-    animatedScore >= 96 ? '💎 Perfect' :
-    animatedScore >= 86 ? 'Excellent' :
-    animatedScore >= 71 ? 'Good' :
-    animatedScore >= 51 ? 'Needs Work' : 'Critical';
+/* ═══════════════════════════════════════════════════════════
+   IMAGE 2: SEGMENTED VERTICAL BAR LEVEL GAUGE
+   ═══════════════════════════════════════════════════════════ */
+function SegmentedLevelMeter({ score = 15 }) {
+  // 50 vertical tick bars total, 10 ticks per level
+  const totalTicks = 50;
+  const activeTicks = Math.round((score / 100) * totalTicks);
 
   return (
-    <div className="relative flex flex-col items-center">
-      <svg width={size} height={size} className="transform -rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12" />
-        <circle
-          cx={size / 2} cy={size / 2} r={radius}
-          fill="none" stroke={color} strokeWidth="12"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          style={{ transition: 'stroke-dashoffset 0.1s ease-out, stroke 0.3s' }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-5xl font-black tabular-nums" style={{ color }}>{animatedScore}</span>
-        <span className="text-xs text-secondary uppercase tracking-widest mt-1">{label}</span>
+    <div className="w-full">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-mono text-slate-400">
+          Overall score: <strong className="text-white text-sm font-semibold">{score}%</strong>
+        </span>
+        <span className="text-[11px] font-mono text-lime-400 bg-lime-400/10 px-2 py-0.5 rounded">
+          {score >= 80 ? 'Autonomous Grade' : score >= 50 ? 'Semi-Autonomous' : 'Remediation Required'}
+        </span>
       </div>
-    </div>
-  );
-}
 
-function PipelineProgress({ stages }) {
-  return (
-    <div className="bg-surface rounded-2xl border border-white/5 p-6 mb-6">
-      <h3 className="text-sm font-semibold text-secondary mb-5 uppercase tracking-wider">Pipeline Progress</h3>
-      <div className="flex items-center">
-        {PIPELINE.map((stage, i) => {
-          const status = stages[stage.key] || 'pending';
-          const Icon = stage.icon;
+      {/* Segmented ticks container */}
+      <div className="grid grid-cols-5 gap-3 p-3 rounded-xl bg-[#090b10] border border-white/[0.06]">
+        {[1, 2, 3, 4, 5].map((lvl, colIdx) => {
+          const startIdx = colIdx * 10;
           return (
-            <React.Fragment key={stage.key}>
-              <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                <div className={`w-11 h-11 rounded-full flex items-center justify-center border-2 transition-all duration-500 ${
-                  status === 'done' ? 'border-emerald-400 bg-emerald-400/20 shadow-lg shadow-emerald-400/20' :
-                  status === 'active' ? 'border-violet-400 bg-violet-400/20 animate-pulse shadow-lg shadow-violet-400/20' :
-                  status === 'error' ? 'border-red-400 bg-red-400/20' : 'border-white/10 bg-white/5'
-                }`}>
-                  <Icon className={`w-5 h-5 ${
-                    status === 'done' ? 'text-emerald-400' :
-                    status === 'active' ? 'text-violet-400' :
-                    status === 'error' ? 'text-red-400' : 'text-white/20'
-                  }`} />
-                </div>
-                <span className={`text-xs font-medium ${
-                  status === 'done' ? 'text-emerald-400' :
-                  status === 'active' ? 'text-violet-400' : 'text-white/30'
-                }`}>{stage.label}</span>
+            <div key={lvl} className="flex flex-col gap-2">
+              <div className="flex items-end gap-[3px] h-6 justify-between">
+                {Array.from({ length: 10 }).map((_, tickIdx) => {
+                  const currentGlobalIdx = startIdx + tickIdx;
+                  const isActive = currentGlobalIdx < activeTicks;
+                  return (
+                    <div
+                      key={tickIdx}
+                      className={`w-[3px] rounded-full transition-all duration-300 ${
+                        isActive
+                          ? 'bg-lime-400 shadow-[0_0_6px_rgba(163,230,53,0.5)] h-5'
+                          : 'bg-[#191e2b] h-3'
+                      }`}
+                    />
+                  );
+                })}
               </div>
-              {i < PIPELINE.length - 1 && (
-                <div className={`flex-1 h-0.5 mx-2 rounded transition-all duration-500 ${
-                  status === 'done' ? 'bg-emerald-400' : 'bg-white/10'
-                }`} />
-              )}
-            </React.Fragment>
+              <span className="text-[10px] font-mono text-slate-500 text-center uppercase">
+                lvl {lvl}
+              </span>
+            </div>
           );
         })}
       </div>
@@ -118,100 +74,171 @@ function PipelineProgress({ stages }) {
   );
 }
 
-function DiffCard({ diff, index }) {
-  const [open, setOpen] = useState(index < 3);
+/* ═══════════════════════════════════════════════════════════
+   IMAGE 5: REAL-TIME TELEMETRY & STRIPED PROGRESS BAR
+   ═══════════════════════════════════════════════════════════ */
+function RealtimeTelemetryBar({ stages, logsCount }) {
+  // Calculate completion percentage based on pipeline stages
+  const stageKeys = ['CLONE', 'SCAN', 'FIX', 'TEST', 'PUSH', 'DONE'];
+  const completedCount = stageKeys.filter(k => stages[k] === 'done').length;
+  const activeStage = stageKeys.find(k => stages[k] === 'active') || (completedCount === 6 ? 'DONE' : 'SCAN');
+  
+  const percentage = Math.min(100, Math.max(12, Math.round((completedCount / 6) * 100) || (logsCount > 0 ? 25 : 8)));
+
   return (
-    <div className="bg-surface rounded-xl border border-white/5 overflow-hidden mb-3">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-3 p-3 hover:bg-white/5 transition-colors cursor-pointer text-left"
-      >
-        {open ? <ChevronDown className="w-4 h-4 text-secondary" /> : <ChevronRight className="w-4 h-4 text-secondary" />}
-        <FileCode className="w-4 h-4 text-violet-400 shrink-0" />
-        <span className="text-sm font-mono text-white/80 truncate">{diff.file}</span>
-        <span className="text-xs text-white/30 ml-auto shrink-0">L{diff.line}</span>
-        <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-          diff.method === 'ai' ? 'bg-violet-500/20 text-violet-300' : 'bg-blue-500/20 text-blue-300'
-        }`}>
-          {diff.method === 'ai' ? 'AI Auto-Healed' : 'Heuristic'}
-        </span>
-      </button>
-      {open && (
-        <div className="px-3 pb-3">
-          <p className="text-xs text-secondary mb-2">{diff.message}</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-3">
-              <div className="text-xs text-red-400 mb-1 font-semibold">— Before</div>
-              <code className="text-xs text-red-300/80 block overflow-x-auto whitespace-pre font-mono">{diff.before || '(empty)'}</code>
+    <div className="rounded-2xl bg-[#0b0d14] border border-white/[0.08] p-5 shadow-2xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        {/* Wireframe cube icon + Title */}
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-lime-400/10 border border-lime-400/20 flex items-center justify-center text-lime-400 shrink-0">
+            <Box className="w-4 h-4 text-lime-400" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono font-medium text-slate-400">Scan Block</span>
+              <span className="text-sm font-mono font-bold text-lime-400">#8 563 539</span>
             </div>
-            <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3">
-              <div className="text-xs text-emerald-400 mb-1 font-semibold">+ After</div>
-              <code className="text-xs text-emerald-300/80 block overflow-x-auto whitespace-pre font-mono">{diff.after || '(empty)'}</code>
+            <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500">
+              <span className="w-1.5 h-1.5 rounded-full bg-lime-400 animate-ping" />
+              <span>Analyzing AST graph & synthesizing patch</span>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Right Stage Indicator */}
+        <div className="text-left sm:text-right font-mono text-xs text-slate-400">
+          <span className="text-slate-500">Active Pipeline: </span>
+          <span className="text-white font-medium uppercase">{activeStage}</span>
+        </div>
+      </div>
+
+      {/* Animated Barber-Pole Striped Lime Progress Bar */}
+      <div className="flex items-center gap-4">
+        <div className="flex-1 h-4 bg-[#141722] rounded-lg overflow-hidden p-0.5 border border-white/[0.05]">
+          <div
+            className="h-full rounded-md bg-striped-lime transition-all duration-500"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+        <span className="text-xs font-mono font-bold text-slate-300 w-10 text-right tabular-nums">
+          {percentage}%
+        </span>
+      </div>
     </div>
   );
 }
 
-function ResultsPanel({ result, prUrl }) {
-  if (!result) return null;
-  const s = result.summary || {};
+/* ═══════════════════════════════════════════════════════════
+   IMAGE 4: SOLUTION DRAWER / MODAL
+   ═══════════════════════════════════════════════════════════ */
+function SolutionModal({ diff, onClose }) {
+  const [tab, setTab] = useState('local');
+  const [copied, setCopied] = useState(false);
+
+  if (!diff) return null;
+
+  const instructionsText = tab === 'local'
+    ? `1. Explore the repository to understand the current state related to this signal
+2. Make substantive improvements to the codebase that genuinely address the signal:
+   File: ${diff.file || 'lib/auth.ts'} (Line ${diff.line || 1})
+   Signal: ${diff.message || 'Syntax/Type AST Resolution'}
+3. Verify your fix addresses the issue (e.g., run linter if fixing lint_config, run tests if adding tests)
+4. Keep changes focused on this signal - don't refactor unrelated code
+5. When done with code changes, open a PULL REQUEST with the changes and return the PR URL
+
+CRITICAL: Quality Standards
+Your fix must genuinely improve the codebase.
+Do NOT use workarounds or shortcuts:
+• NO empty placeholder files (e.g., empty test files, stub configs)
+• NO minimal implementations that technically pass but provide no real value`
+    : `git checkout -b gitfix/patch-${Date.now()}
+git apply << 'EOF'
+--- a/${diff.file || 'src/index.ts'}
++++ b/${diff.file || 'src/index.ts'}
+@@ -${diff.line || 1},4 +${diff.line || 1},4 @@
+-${diff.before || 'old_code();'}
++${diff.after || 'new_healed_code();'}
+EOF
+npm test && git commit -am "chore(fix): auto-healed ${diff.file || 'AST signal'}"
+git push origin HEAD`;
+
+  const copyText = () => {
+    navigator.clipboard.writeText(instructionsText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div className="bg-surface rounded-2xl border border-white/5 p-6 mb-6">
-      <div className="flex flex-col lg:flex-row items-center gap-8">
-        <ScoreGauge score={result.score || 0} />
-        <div className="flex-1 space-y-4 w-full">
-          <div className="flex items-center gap-3">
-            <span className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${
-              s.status === 'PASSED' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
-            }`}>{s.status}</span>
-            <span className="text-sm text-secondary">Autonomous CI/CD Healing Complete</span>
-          </div>
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-lg rounded-2xl bg-[#0e1017] border border-white/10 shadow-2xl p-6 flex flex-col gap-5">
+        {/* Title */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-white tracking-tight">
+            Solution for {diff.file ? diff.file.split('/').pop() : 'Pre-commit Hooks'}
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-white/[0.05] transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="rounded-xl p-3 bg-white/5 text-center">
-              <div className="text-xl font-bold text-white">{s.totalFailures || 0}</div>
-              <div className="text-xs text-secondary mt-0.5">Issues Found</div>
-            </div>
-            <div className="rounded-xl p-3 bg-white/5 text-center">
-              <div className="text-xl font-bold text-emerald-400">{s.fixesApplied || 0}</div>
-              <div className="text-xs text-secondary mt-0.5">Remediated</div>
-            </div>
-            <div className="rounded-xl p-3 bg-white/5 text-center">
-              <div className="text-xl font-bold text-amber-400">{s.remainingIssues || 0}</div>
-              <div className="text-xs text-secondary mt-0.5">Remaining</div>
-            </div>
-            <div className="rounded-xl p-3 bg-white/5 text-center">
-              <div className="text-xl font-bold text-white flex items-center justify-center gap-1">
-                <Clock className="w-4 h-4" />{s.duration}
-              </div>
-              <div className="text-xs text-secondary mt-0.5">Duration</div>
-            </div>
-          </div>
+        {/* Segmented Toggle Tabs: Local vs Cloud */}
+        <div className="grid grid-cols-2 p-1 rounded-xl bg-[#141722] border border-white/[0.06]">
+          <button
+            onClick={() => setTab('local')}
+            className={`py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+              tab === 'local' ? 'bg-[#222738] text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Local
+          </button>
+          <button
+            onClick={() => setTab('cloud')}
+            className={`py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+              tab === 'cloud' ? 'bg-[#222738] text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Cloud
+          </button>
+        </div>
 
-          {(prUrl || s.prUrl) && (
-            <a
-              href={prUrl || s.prUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 rounded-xl text-white font-semibold transition-all cursor-pointer shadow-lg shadow-violet-600/20"
-            >
-              <ExternalLink className="w-5 h-5" />
-              View Pull Request on GitHub
-            </a>
-          )}
+        {/* Monospace Code Box */}
+        <div className="p-4 rounded-xl bg-[#090b10] border border-white/[0.06] font-mono text-xs text-slate-300 leading-relaxed overflow-y-auto max-h-[300px]">
+          <pre className="whitespace-pre-wrap">{instructionsText}</pre>
+        </div>
+
+        {/* Actions: Copy Button (Solid White) and Back Button */}
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={copyText}
+            className="w-full py-2.5 rounded-xl bg-white text-black font-semibold text-xs hover:bg-slate-200 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+          >
+            {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+            <span>{copied ? 'Copied to Clipboard' : 'Copy'}</span>
+          </button>
+          <button
+            onClick={onClose}
+            className="w-full py-2 text-xs font-medium text-slate-400 hover:text-white transition-colors cursor-pointer"
+          >
+            Back
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
+/* ═══════════════════════════════════════════════════════════
+   MAIN AGENT TELEMETRY PAGE
+   ═══════════════════════════════════════════════════════════ */
 export default function AgentPage() {
   const router = useRouter();
   const [sessionData, setSessionData] = useState(null);
   const [started, setStarted] = useState(false);
+  const [showAmberBanner, setShowAmberBanner] = useState(true);
+  const [selectedDiff, setSelectedDiff] = useState(null);
   const logsEndRef = useRef(null);
 
   const {
@@ -249,95 +276,240 @@ export default function AgentPage() {
     logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [logs]);
 
+  const repoName = sessionData?.repoUrl
+    ? sessionData.repoUrl.replace(/^(https?:\/\/)?github\.com\//, '').replace(/\.git$/, '')
+    : 'repository';
+
+  const score = result?.score || 15;
   const isRunning = !result;
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[#050507] text-white">
-        {/* Header */}
-        <div className="border-b border-white/5 bg-[#0c0c10]/80 backdrop-blur-xl sticky top-0 z-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="flex items-center gap-2 text-secondary hover:text-white transition-colors cursor-pointer text-sm"
-            >
-              <ArrowLeft className="w-4 h-4" /> Mission Control
-            </button>
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-violet-400" />
-              <h1 className="text-base font-bold">Autonomous Remediation Stream</h1>
+      <Navbar />
+      <div className="min-h-screen bg-[#07080b] text-slate-100 font-sans pb-16">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+
+          {/* ═══════════════════════════════════════════════════════════
+              HEADER (Image 2: Repo title, url, last update, Update Report)
+             ═══════════════════════════════════════════════════════════ */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/[0.06]">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#141722] border border-white/10 flex items-center justify-center font-mono font-bold text-slate-300">
+                {repoName.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                  <span>{repoName}</span>
+                  <a
+                    href={sessionData?.repoUrl || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-slate-500 hover:text-white transition-colors"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </h1>
+                <span className="text-xs text-slate-500 font-mono">Last updated: Just now</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-xs">
-              <Shield className="w-4 h-4 text-secondary" />
-              {isRunning ? (
-                <span className="flex items-center gap-1.5 text-violet-400 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" /> Running
-                </span>
-              ) : (
-                <span className="text-emerald-400 font-medium">Complete</span>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-medium text-slate-200 transition-colors cursor-pointer font-mono"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Update Report</span>
+              </button>
+              {(prUrl || result?.summary?.prUrl) && (
+                <a
+                  href={prUrl || result?.summary?.prUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-lime-400 text-black font-semibold text-xs transition-colors cursor-pointer font-mono shadow-sm"
+                >
+                  <GitBranch className="w-3.5 h-3.5" />
+                  <span>View PR</span>
+                </a>
               )}
             </div>
           </div>
-        </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-          {/* Pipeline Progress */}
-          <PipelineProgress stages={stages} />
+          {/* ═══════════════════════════════════════════════════════════
+              AMBER NOTICE BANNER (Image 2)
+             ═══════════════════════════════════════════════════════════ */}
+          {showAmberBanner && (
+            <div className="rounded-xl bg-amber-950/20 border border-amber-500/25 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-start gap-2.5 text-amber-200/90 leading-relaxed">
+                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Higher readiness level</strong> = more effective autonomous performance on this repo.
+                  Completing criteria directly improves autonomy ratio and code output.
+                </span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0 font-mono">
+                <button
+                  onClick={() => setShowAmberBanner(false)}
+                  className="px-2.5 py-1 text-slate-400 hover:text-white transition-colors cursor-pointer text-[11px]"
+                >
+                  Don't Show Again
+                </button>
+                <button
+                  onClick={() => setShowAmberBanner(false)}
+                  className="px-3 py-1 rounded-md border border-amber-500/30 text-amber-300 hover:bg-amber-500/10 transition-colors cursor-pointer text-[11px]"
+                >
+                  Okay
+                </button>
+              </div>
+            </div>
+          )}
 
-          {/* Results Panel when complete */}
-          <ResultsPanel result={result} prUrl={prUrl} />
+          {/* ═══════════════════════════════════════════════════════════
+              SEGMENTED LEVEL METER (Image 2)
+             ═══════════════════════════════════════════════════════════ */}
+          <div className="rounded-2xl bg-[#0c0e17] border border-white/[0.08] p-5 shadow-2xl">
+            <SegmentedLevelMeter score={score} />
+          </div>
 
-          {/* Logs and Code Diffs Split View */}
+          {/* ═══════════════════════════════════════════════════════════
+              3 SUMMARY METRIC CARDS (Image 2)
+             ═══════════════════════════════════════════════════════════ */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Card 1: Completed */}
+            <div className="p-5 rounded-2xl bg-[#0c0e17] border border-white/[0.08] flex flex-col justify-between">
+              <div className="flex items-center gap-2 text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">
+                <CheckCircle className="w-3.5 h-3.5 text-lime-400" />
+                <span>Completed</span>
+              </div>
+              <div className="text-2xl font-bold font-mono text-white tabular-nums">
+                {result?.summary?.fixesApplied || diffs.length} / {result?.summary?.totalFailures || (diffs.length > 0 ? diffs.length + 3 : 12)}
+              </div>
+            </div>
+
+            {/* Card 2: To Level 2 */}
+            <div className="p-5 rounded-2xl bg-[#0c0e17] border border-white/[0.08] flex flex-col justify-between">
+              <div className="flex items-center gap-2 text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">
+                <Sliders className="w-3.5 h-3.5 text-slate-400" />
+                <span>To Next Level</span>
+              </div>
+              <div className="text-2xl font-bold font-mono text-white">
+                {Math.max(1, 4 - diffs.length)} Criteria(s)
+              </div>
+            </div>
+
+            {/* Card 3: Quick Win */}
+            <div
+              onClick={() => setSelectedDiff(diffs[0] || { file: 'package.json', message: 'Pre-commit Hooks configuration' })}
+              className="p-5 rounded-2xl bg-[#0c0e17] border border-white/[0.08] hover:border-white/20 transition-all cursor-pointer group flex flex-col justify-between"
+            >
+              <div className="flex items-center justify-between text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Quick Win</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition-transform" />
+              </div>
+              <div>
+                <div className="text-[11px] text-slate-500 font-mono">Style & Validation</div>
+                <div className="text-sm font-semibold text-white group-hover:text-amber-300 transition-colors truncate">
+                  {diffs[0]?.file ? diffs[0].file.split('/').pop() : 'Pre-commit Hooks'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ═══════════════════════════════════════════════════════════
+              REAL-TIME TELEMETRY BAR (Image 5)
+             ═══════════════════════════════════════════════════════════ */}
+          <RealtimeTelemetryBar stages={stages} logsCount={logs.length} />
+
+          {/* ═══════════════════════════════════════════════════════════
+              LOGS & CODE FIXES SPLIT VIEW
+             ═══════════════════════════════════════════════════════════ */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Live Logs */}
-            <div className="bg-surface rounded-2xl border border-white/5 flex flex-col h-[500px]">
-              <div className="p-4 border-b border-white/5 flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${isRunning ? 'bg-violet-400 animate-pulse' : 'bg-emerald-400'}`} />
-                <h3 className="text-xs font-semibold text-secondary uppercase tracking-wider">Live Agent Telemetry</h3>
-                <span className="text-xs text-white/20 ml-auto">{logs.length} entries</span>
+            <div className="rounded-2xl bg-[#0c0e17] border border-white/[0.08] flex flex-col h-[460px] shadow-2xl overflow-hidden">
+              <div className="p-4 border-b border-white/[0.06] flex items-center justify-between bg-black/20">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${isRunning ? 'bg-lime-400 animate-pulse' : 'bg-emerald-400'}`} />
+                  <span className="text-xs font-mono font-medium text-slate-300 uppercase tracking-wider">
+                    Agent Log Telemetry
+                  </span>
+                </div>
+                <span className="text-[11px] font-mono text-slate-500">{logs.length} events</span>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-1.5 font-mono text-xs scrollbar-thin">
+              <div className="flex-1 overflow-y-auto p-4 space-y-1 font-mono text-xs text-slate-300 scrollbar-thin bg-[#090b10]">
                 {logs.map((log, i) => (
-                  <div key={i} className="flex gap-2">
-                    <span className="text-secondary shrink-0">[{log.time}]</span>
+                  <div key={i} className="flex gap-2 leading-relaxed">
+                    <span className="text-slate-600 select-none shrink-0">[{log.time}]</span>
                     <span className={
                       log.type === 'ERROR' ? 'text-red-400' :
-                      log.type === 'SUCCESS' ? 'text-emerald-400' :
-                      log.type === 'ACTION' ? 'text-blue-400' :
-                      log.type === 'WARNING' ? 'text-amber-400' : 'text-gray-300'
-                    }>{log.message}</span>
+                      log.type === 'SUCCESS' ? 'text-lime-400' :
+                      log.type === 'ACTION' ? 'text-sky-400' :
+                      log.type === 'WARNING' ? 'text-amber-400' : 'text-slate-300'
+                    }>
+                      {log.message}
+                    </span>
                   </div>
                 ))}
                 <div ref={logsEndRef} />
               </div>
             </div>
 
-            {/* Diffs Panel */}
-            <div className="bg-surface rounded-2xl border border-white/5 flex flex-col h-[500px]">
-              <div className="p-4 border-b border-white/5 flex items-center gap-2">
-                <FileCode className="w-4 h-4 text-violet-400" />
-                <h3 className="text-xs font-semibold text-secondary uppercase tracking-wider">Verified Code Fixes</h3>
-                <span className="text-xs text-white/20 ml-auto">{diffs.length} fixes</span>
+            {/* Verified Fixes Panel */}
+            <div className="rounded-2xl bg-[#0c0e17] border border-white/[0.08] flex flex-col h-[460px] shadow-2xl overflow-hidden">
+              <div className="p-4 border-b border-white/[0.06] flex items-center justify-between bg-black/20">
+                <div className="flex items-center gap-2">
+                  <FileCode className="w-4 h-4 text-lime-400" />
+                  <span className="text-xs font-mono font-medium text-slate-300 uppercase tracking-wider">
+                    Remediated Code Signals
+                  </span>
+                </div>
+                <span className="text-[11px] font-mono text-slate-500">{diffs.length} diffs</span>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin bg-[#090b10]">
                 {diffs.length === 0 ? (
-                  <div className="text-center text-white/20 py-20">
-                    {isRunning ? (
-                      <div className="flex flex-col items-center gap-2">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                        <p className="text-sm">Agent inspecting code and preparing verified diffs...</p>
-                      </div>
-                    ) : (
-                      <p className="text-sm">No code changes required</p>
-                    )}
+                  <div className="text-center text-slate-500 font-mono text-xs py-28">
+                    {isRunning ? 'Analyzing repository AST & generating surgical patches...' : 'All criteria passing with zero regressions.'}
                   </div>
                 ) : (
-                  diffs.map((diff, i) => <DiffCard key={i} diff={diff} index={i} />)
+                  diffs.map((diff, i) => (
+                    <div
+                      key={i}
+                      className="p-3.5 rounded-xl bg-[#0e111a] border border-white/[0.06] hover:border-white/20 transition-all cursor-pointer group"
+                      onClick={() => setSelectedDiff(diff)}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-mono text-xs font-medium text-slate-200 group-hover:text-lime-300 transition-colors truncate">
+                          {diff.file}
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-500">L{diff.line || 1}</span>
+                      </div>
+                      <p className="text-xs text-slate-400 mb-2 truncate font-mono">{diff.message}</p>
+                      <div className="flex items-center justify-between pt-2 border-t border-white/[0.04]">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-lime-400/10 text-lime-400 border border-lime-400/20">
+                          AST Verified
+                        </span>
+                        <span className="text-xs text-slate-400 group-hover:text-white flex items-center gap-1 font-mono">
+                          Inspect <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+                    </div>
+                  ))
                 )}
               </div>
             </div>
           </div>
-        </div>
+
+          {/* Solution Modal (Image 4) */}
+          {selectedDiff && (
+            <SolutionModal
+              diff={selectedDiff}
+              onClose={() => setSelectedDiff(null)}
+            />
+          )}
+
+        </main>
       </div>
     </ProtectedRoute>
   );

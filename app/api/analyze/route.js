@@ -59,45 +59,45 @@ export async function POST(req) {
       try {
         // ═══ STAGE 1: CLONE (GitHub Tree & Language Inspection) ═══
         sendStage('CLONE', 'active');
-        sendLog(`[📦 Clone Agent] Inspecting target: ${owner}/${repo}...`, 'INFO');
+        sendLog(`[CLONE] Inspecting target: ${owner}/${repo}...`, 'INFO');
 
         let defaultBranch = 'main';
         try {
           defaultBranch = await getDefaultBranch(octokit, owner, repo);
         } catch (e) {
-          sendLog(`[⚠️ GitHub Agent] Could not fetch default branch. Defaulting to 'main'.`, 'WARNING');
+          sendLog(`[GITHUB] Could not fetch default branch. Defaulting to 'main'.`, 'WARNING');
         }
 
-        sendLog(`[📦 Clone Agent] Resolving Git tree for branch '${defaultBranch}'...`, 'INFO');
+        sendLog(`[CLONE] Resolving Git tree for branch '${defaultBranch}'...`, 'INFO');
         const { tree } = await getRepoTree(octokit, owner, repo, defaultBranch);
 
         const langStats = detectLanguagesFromTree(tree);
         send({ type: 'LANG_STATS', data: langStats });
-        sendLog(`[📦 Clone Agent] Indexed ${langStats.total_files} source files across repository.`, 'SUCCESS');
+        sendLog(`[CLONE] Indexed ${langStats.total_files} source files across repository.`, 'SUCCESS');
         sendStage('CLONE', 'done');
 
         // ═══ STAGE 1.5: CI FAILURE DIAGNOSTICS ═══
-        sendLog(`[🔍 CI Agent] Checking GitHub Actions workflow history...`, 'INFO');
+        sendLog(`[CI] Checking GitHub Actions workflow history...`, 'INFO');
         let ciIssues = [];
         try {
           const failedRun = await getLatestFailedWorkflowRun(octokit, owner, repo);
           if (failedRun) {
-            sendLog(`[⚠️ CI Agent] Detected failing workflow: "${failedRun.name}" (Run #${failedRun.run_number})`, 'WARNING');
+            sendLog(`[CI] Detected failing workflow: "${failedRun.name}" (Run #${failedRun.run_number})`, 'WARNING');
             const ciDiagnostics = await extractCiFailureLogs(octokit, owner, repo, failedRun.id);
             if (ciDiagnostics && ciDiagnostics.issues.length > 0) {
               ciIssues = ciDiagnostics.issues;
-              sendLog(`[🔍 CI Agent] Extracted ${ciIssues.length} root-cause errors from CI runner logs!`, 'ACTION');
+              sendLog(`[CI] Extracted ${ciIssues.length} root-cause errors from CI runner logs.`, 'ACTION');
             }
           } else {
-            sendLog(`[✅ CI Agent] No failing GitHub Actions runs detected. Running proactive health scan.`, 'INFO');
+            sendLog(`[CI] No failing GitHub Actions runs detected. Running proactive health scan.`, 'INFO');
           }
         } catch (ciErr) {
-          sendLog(`[ℹ️ CI Agent] GitHub Actions inspection skipped: ${ciErr.message}`, 'INFO');
+          sendLog(`[CI] GitHub Actions inspection skipped: ${ciErr.message}`, 'INFO');
         }
 
         // ═══ STAGE 2: SCAN ═══
         sendStage('SCAN', 'active');
-        sendLog(`[🔎 Scanner Agent] Initiating multi-language AST & security scan...`, 'INFO');
+        sendLog(`[SCANNER] Initiating multi-language AST & security scan...`, 'INFO');
 
         // Select candidate files to scan (up to 30 source files)
         const candidateFiles = tree
@@ -114,12 +114,12 @@ export async function POST(req) {
           detectedIssues.push(...fileIssues);
         }
 
-        sendLog(`[🔎 Scanner Agent] Scan completed: ${detectedIssues.length} issues identified.`, detectedIssues.length > 0 ? 'WARNING' : 'SUCCESS');
+        sendLog(`[SCANNER] Scan completed: ${detectedIssues.length} issues identified.`, detectedIssues.length > 0 ? 'WARNING' : 'SUCCESS');
         sendStage('SCAN', 'done');
 
         // ═══ STAGE 3: FIX ═══
         sendStage('FIX', 'active');
-        sendLog(`[🔧 AI Fixer Agent] Starting autonomous remediation...`, 'ACTION');
+        sendLog(`[FIXER] Starting autonomous remediation...`, 'ACTION');
 
         const fixesApplied = [];
         const remainingIssues = [];
@@ -135,7 +135,7 @@ export async function POST(req) {
             continue;
           }
 
-          sendLog(`[🔧 AI Fixer] Remedying ${issue.type} in ${issue.file} L${issue.line}...`, 'ACTION');
+          sendLog(`[FIXER] Remedying ${issue.type} in ${issue.file} L${issue.line}...`, 'ACTION');
           const fixResult = await fixIssue(content, issue);
 
           if (fixResult && fixResult.status === 'fixed') {
@@ -166,7 +166,7 @@ export async function POST(req) {
               method: fixResult.method
             });
 
-            sendLog(`[✅ AI Fixer] Repaired ${issue.file} (${fixResult.method.toUpperCase()})`, 'SUCCESS');
+            sendLog(`[FIXER] Repaired ${issue.file} (${fixResult.method.toUpperCase()})`, 'SUCCESS');
           } else {
             remainingIssues.push(issue);
           }
@@ -176,7 +176,7 @@ export async function POST(req) {
 
         // ═══ STAGE 3.5: TEST ═══
         sendStage('TEST', 'active');
-        sendLog(`[🧪 Test Agent] Verifying syntax and AST integrity for modified files...`, 'INFO');
+        sendLog(`[TEST] Verifying syntax and AST integrity for modified files...`, 'INFO');
 
         const testResults = {
           detected: true,
@@ -186,7 +186,7 @@ export async function POST(req) {
           framework: 'AST Syntax Verifier'
         };
         send({ type: 'TEST_RESULTS', data: testResults });
-        sendLog(`[🧪 Test Agent] AST validation passed 100% for all repaired files.`, 'SUCCESS');
+        sendLog(`[TEST] AST validation passed 100% for all repaired files.`, 'SUCCESS');
         sendStage('TEST', 'done');
 
         // ═══ STAGE 4: PUSH & PR ═══
@@ -195,7 +195,7 @@ export async function POST(req) {
         const branchName = `${team_name.replace(/\s+/g, '_')}_${leader_name.replace(/\s+/g, '_')}_AI_Fix`.toUpperCase();
 
         if (access_token && filesToCommit.size > 0) {
-          sendLog(`[🚀 Git Agent] Creating atomic commit on branch '${branchName}'...`, 'ACTION');
+          sendLog(`[GIT] Creating atomic commit on branch '${branchName}'...`, 'ACTION');
           try {
             await createAtomicCommit(
               octokit,
@@ -206,24 +206,24 @@ export async function POST(req) {
               Array.from(filesToCommit.values()),
               `[GitFixAI] ${commit_msg} (${fixesApplied.length} fixes applied)`
             );
-            sendLog(`[🚀 Git Agent] Successfully pushed atomic commit to GitHub!`, 'SUCCESS');
+            sendLog(`[GIT] Successfully pushed atomic commit to GitHub.`, 'SUCCESS');
 
-            sendLog(`[📋 PR Agent] Generating Pull Request...`, 'ACTION');
+            sendLog(`[PR] Generating Pull Request...`, 'ACTION');
             const total = fixesApplied.length + remainingIssues.length;
             const score = total === 0 ? 100 : Math.max(0, Math.round((fixesApplied.length / Math.max(total, 1)) * 100));
 
             prUrl = await createPullRequest(octokit, owner, repo, branchName, defaultBranch, fixesApplied, score);
             if (prUrl) {
               send({ type: 'PR', url: prUrl });
-              sendLog(`[📋 PR Agent] Pull Request opened: ${prUrl}`, 'SUCCESS');
+              sendLog(`[PR] Pull Request opened: ${prUrl}`, 'SUCCESS');
             }
           } catch (gitErr) {
-            sendLog(`[⚠️ Git Agent] GitHub commit/PR failed: ${gitErr.message}`, 'WARNING');
+            sendLog(`[GIT] GitHub commit/PR failed: ${gitErr.message}`, 'WARNING');
           }
         } else if (!access_token) {
-          sendLog(`[ℹ️ Push Agent] Local sandbox mode: no GitHub OAuth token provided.`, 'INFO');
+          sendLog(`[PUSH] Local sandbox mode: no GitHub OAuth token provided.`, 'INFO');
         } else {
-          sendLog(`[ℹ️ Push Agent] Clean scan: no fixes required.`, 'INFO');
+          sendLog(`[PUSH] Clean scan: no fixes required.`, 'INFO');
         }
         sendStage('PUSH', 'done');
 
@@ -251,7 +251,7 @@ export async function POST(req) {
         };
 
         send(finalReport);
-        sendLog(`[🏁 Mission Complete] Remediation finished in ${duration} with score ${score}/100!`, 'SUCCESS');
+        sendLog(`[COMPLETE] Remediation finished in ${duration} with score ${score}/100.`, 'SUCCESS');
 
         // Save to Firestore / local history
         try {
@@ -277,7 +277,7 @@ export async function POST(req) {
         }
 
       } catch (fatalError) {
-        sendLog(`[❌ Fatal Error] Execution stopped: ${fatalError.message}`, 'ERROR');
+        sendLog(`[ERROR] Execution stopped: ${fatalError.message}`, 'ERROR');
         sendStage('DONE', 'error');
       } finally {
         controller.close();
