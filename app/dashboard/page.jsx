@@ -20,10 +20,16 @@ import {
   Package,
   Palette,
   Lock,
+  Unlock,
   Cpu,
   Sparkles,
   GitBranch,
-  ShieldCheck
+  ShieldCheck,
+  Check,
+  FolderGit2,
+  Layers,
+  Search,
+  ExternalLink
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/components/Navbar';
@@ -33,12 +39,16 @@ import RepoList from '@/components/RepoList';
 function DashboardContent() {
   const [repos, setRepos] = useState([]);
   const [repoUrl, setRepoUrl] = useState('');
+  const [targetDetails, setTargetDetails] = useState(null);
+  const [verifyingRepo, setVerifyingRepo] = useState(false);
+  const [verifyError, setVerifyError] = useState(null);
   const [commitMsg, setCommitMsg] = useState('fix(gitfix): healed {issues_count} issues in {files_changed} files • score {score}/100');
   const [autoFix, setAutoFix] = useState({ syntax: true, imports: true, formatting: true, security: false });
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
   const [githubConnected, setGithubConnected] = useState(false);
   const [githubUser, setGithubUser] = useState(null);
+  const [selectionMode, setSelectionMode] = useState('separate'); // 'separate' | 'all'
   const router = useRouter();
   const searchParams = useSearchParams();
   const { userName, userAvatar, authProvider, signInWithGithub } = useAuth();
@@ -100,6 +110,7 @@ function DashboardContent() {
         if (storedUser) {
           try { setGithubUser(JSON.parse(storedUser)); } catch (e) { /* ignore */ }
         }
+        // Fetch repositories
         await fetchRepos(storedToken);
       }
     };
@@ -110,7 +121,6 @@ function DashboardContent() {
   // ─── Fetch repos using a GitHub token ───
   const fetchRepos = async (token) => {
     if (!token) return;
-    setLoading(true);
     try {
       const res = await fetch('https://api.github.com/user/repos?sort=updated&per_page=100', {
         headers: {
@@ -125,14 +135,70 @@ function DashboardContent() {
           full_name: r.full_name,
           url: r.clone_url || `https://github.com/${r.full_name}`,
           private: r.private,
-          description: r.description
+          description: r.description,
+          default_branch: r.default_branch || 'main'
         })));
       }
     } catch (err) {
       console.warn('Could not fetch repos directly:', err);
-    } finally {
-      setLoading(false);
     }
+  };
+
+  // ─── Verify single separate repo ───
+  const verifySeparateRepo = async (urlToVerify) => {
+    const target = urlToVerify || repoUrl;
+    if (!target) return;
+    
+    // Parse owner/repo
+    let clean = target.replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '').trim();
+    const parts = clean.split('/');
+    if (parts.length < 2) {
+      setVerifyError('Please enter a valid GitHub repository in "owner/repo" or full URL format');
+      return;
+    }
+
+    const owner = parts[0];
+    const repo = parts[1];
+    setVerifyingRepo(true);
+    setVerifyError(null);
+
+    const token = localStorage.getItem('github_access_token');
+    const headers = { Accept: 'application/vnd.github.v3+json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    try {
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
+      if (res.ok) {
+        const data = await res.json();
+        setTargetDetails({
+          name: data.name,
+          fullName: data.full_name,
+          description: data.description,
+          private: data.private,
+          defaultBranch: data.default_branch,
+          stars: data.stargazers_count,
+          language: data.language,
+          url: data.clone_url || `https://github.com/${data.full_name}`
+        });
+        setRepoUrl(data.clone_url || `https://github.com/${data.full_name}`);
+        setVerifyError(null);
+      } else if (res.status === 404) {
+        setVerifyError('Repository not found. If it is private, make sure GitHub is connected.');
+        setTargetDetails(null);
+      } else {
+        setVerifyError(`GitHub error (${res.status}). Could not inspect repository.`);
+      }
+    } catch (e) {
+      setVerifyError('Could not verify repository with GitHub API.');
+    } finally {
+      setVerifyingRepo(false);
+    }
+  };
+
+  // ─── Select separate repository handler ───
+  const handleSelectRepo = (url) => {
+    setRepoUrl(url);
+    verifySeparateRepo(url);
   };
 
   // ─── Connect GitHub ───
@@ -162,6 +228,7 @@ function DashboardContent() {
     setGithubConnected(false);
     setGithubUser(null);
     setRepos([]);
+    setTargetDetails(null);
   };
 
   // ─── Refresh repos ───
@@ -171,12 +238,16 @@ function DashboardContent() {
       alert('No GitHub connection. Please connect your GitHub account first.');
       return;
     }
+    setLoading(true);
+    setStatusMsg('Refreshing repositories...');
     await fetchRepos(token);
+    setLoading(false);
+    setStatusMsg('');
   };
 
   // ─── Start Analysis ───
   const startAnalysis = () => {
-    if (!repoUrl) return alert('Please select a repository or enter a URL!');
+    if (!repoUrl) return alert('Please select a separate repository or enter a URL!');
     if (!repoUrl.includes('github.com')) return alert('Please enter a valid GitHub repository URL!');
 
     const token = localStorage.getItem('github_access_token');
@@ -198,14 +269,14 @@ function DashboardContent() {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
           
           {/* ═══════════════════════════════════════════════════════════
-              MISSION CONTROL HERO BANNER (Directly matching theme)
+              MISSION CONTROL HERO BANNER
              ═══════════════════════════════════════════════════════════ */}
           <div className="relative rounded-3xl bg-gradient-to-br from-[#073f27] via-[#08472c] to-[#052b1a] border-2 border-emerald-500/30 p-6 sm:p-8 md:p-10 shadow-2xl overflow-hidden">
             
             {/* Ambient Radiance */}
             <div className="absolute -top-12 -right-12 w-64 h-64 bg-emerald-400/15 rounded-full blur-3xl pointer-events-none" />
 
-            {/* Retro PC Sticker floating on top right */}
+            {/* Retro PC Sticker */}
             <div className="absolute top-4 right-4 sm:top-6 sm:right-8 opacity-80 sm:opacity-100 hover:scale-105 transition-transform pointer-events-none">
               <div className="relative w-16 h-16 sm:w-20 sm:h-20 drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)]">
                 <Image
@@ -220,7 +291,7 @@ function DashboardContent() {
             <div className="relative z-10 max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 border border-emerald-400/30 text-[11px] font-mono uppercase tracking-widest text-emerald-300 mb-3">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Autonomous Engine &bull; Ready</span>
+                <span>Single Target Mode &bull; Ready</span>
               </div>
 
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-[#1ae38e] leading-none mb-3">
@@ -228,7 +299,7 @@ function DashboardContent() {
               </h1>
 
               <p className="text-xs sm:text-sm text-emerald-100/85 font-medium leading-relaxed max-w-xl">
-                Select any repository to begin autonomous AST scanning, self-healing test runs, and automated Pull Request creation on GitHub.
+                Choose a separate repository for autonomous remediation. GitFix executes AST parsing, self-healing test loops, and submits a verified PR to your chosen target.
               </p>
 
               {/* Status Telemetry Pills */}
@@ -250,7 +321,9 @@ function DashboardContent() {
 
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-emerald-500/30 text-emerald-200">
                   <Cpu className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Available Targets: <strong>{repos.length}</strong></span>
+                  <span>
+                    Selected Target: {repoUrl ? <strong>{repoUrl.replace('https://github.com/', '')}</strong> : 'None selected'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -267,32 +340,8 @@ function DashboardContent() {
           )}
 
           {/* ═══════════════════════════════════════════════════════════
-              GITHUB CONNECT PROMPT (When disconnected)
-             ═══════════════════════════════════════════════════════════ */}
-          {!githubConnected && (
-            <div className="rounded-3xl bg-[#0d141e] border border-blue-500/30 p-6 sm:p-8 shadow-xl text-center relative overflow-hidden">
-              <div className="inline-flex p-3 bg-blue-600/20 rounded-2xl border border-blue-400/30 mb-3">
-                <Github className="w-7 h-7 text-white" />
-              </div>
-              <h2 className="text-xl font-black uppercase text-white tracking-tight mb-2">
-                Connect GitHub for 1-Click Auto-PRs
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto mb-6 leading-relaxed">
-                Connect your GitHub account to import your repositories and allow GitFix to open verified, ready-to-merge Pull Requests automatically.
-              </p>
-              <button
-                onClick={handleConnectGithub}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-emerald-50 text-slate-950 font-black text-xs uppercase tracking-wider shadow-md transition-all active:scale-95 cursor-pointer"
-              >
-                <Github className="w-4 h-4" />
-                <span>Authorize GitHub Account</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
-
-          {/* ═══════════════════════════════════════════════════════════
               TARGET SPECIFICATION PANEL (Physical Folder Metaphor)
+              With Option to Select a Separate Repo
              ═══════════════════════════════════════════════════════════ */}
           <div className="relative pt-6">
             
@@ -305,61 +354,160 @@ function DashboardContent() {
             {/* Folder Body Container */}
             <div className="rounded-3xl bg-[#0c1219] border border-emerald-500/25 p-6 sm:p-8 shadow-2xl space-y-6">
               
-              {/* Header Bar */}
-              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              {/* Mode Toggle Header: Separate Repo vs Browse All */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
                 <div>
                   <h2 className="text-lg sm:text-xl font-black uppercase text-white tracking-tight">
-                    Remediation Parameters
+                    Remediation Target
                   </h2>
                   <p className="text-xs text-slate-400 font-mono mt-0.5">
-                    Configure repository target, automated commit message, and test healing passes.
+                    Select a separate repository target or browse your connected repositories.
                   </p>
                 </div>
 
-                {githubConnected && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleRefreshRepos}
-                      disabled={loading}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono transition-colors cursor-pointer"
-                      title="Refresh Repositories"
-                    >
-                      <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
-                      <span>Refresh</span>
-                    </button>
+                {/* Mode Selector Pills */}
+                <div className="flex items-center gap-1.5 p-1 bg-black/50 border border-slate-700 rounded-2xl text-xs font-mono">
+                  <button
+                    type="button"
+                    onClick={() => setSelectionMode('separate')}
+                    className={`px-3.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
+                      selectionMode === 'separate'
+                        ? 'bg-emerald-400 text-slate-950 shadow-sm'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Select Separate Repo
+                  </button>
 
-                    <button
-                      onClick={handleDisconnectGithub}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/60 hover:text-rose-300 text-slate-400 text-xs font-mono transition-colors cursor-pointer"
-                      title="Disconnect GitHub"
-                    >
-                      <Unplug className="w-3 h-3" />
-                      <span>Disconnect</span>
-                    </button>
-                  </div>
-                )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectionMode('all');
+                      if (repos.length === 0 && githubConnected) handleRefreshRepos();
+                    }}
+                    className={`px-3.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
+                      selectionMode === 'all'
+                        ? 'bg-emerald-400 text-slate-950 shadow-sm'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Browse All Repos ({repos.length})
+                  </button>
+                </div>
               </div>
 
-              {/* Form Inputs */}
-              <div className="space-y-5">
-                
-                {/* Repo URL Input */}
+              {/* MODE 1: SELECT SEPARATE REPOSITORY INPUT */}
+              <div className="space-y-4">
                 <div>
                   <label className="text-xs font-mono uppercase font-bold text-slate-300 mb-2 flex items-center justify-between">
-                    <span>Git Repository Target</span>
-                    <span className="text-[11px] text-emerald-400 font-normal">Click a repo below or enter custom URL</span>
+                    <span>Target Repository (owner/repo or URL)</span>
+                    <span className="text-[11px] text-emerald-400 font-normal">GitFix runs exclusively on this chosen repository</span>
                   </label>
-                  <div className="relative">
-                    <LinkIcon className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5 pointer-events-none" />
-                    <input
-                      type="text"
-                      placeholder="https://github.com/organization/repository"
-                      value={repoUrl}
-                      onChange={(e) => setRepoUrl(e.target.value)}
-                      className="w-full bg-[#111927] border border-slate-700 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 font-mono focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors"
-                    />
+                  
+                  <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
+                    <div className="relative flex-1">
+                      <LinkIcon className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="e.g. AryanSingh64/GItFIxAI or https://github.com/owner/repo"
+                        value={repoUrl}
+                        onChange={(e) => {
+                          setRepoUrl(e.target.value);
+                          setTargetDetails(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            verifySeparateRepo();
+                          }
+                        }}
+                        className="w-full bg-[#111927] border border-slate-700 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 font-mono focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => verifySeparateRepo()}
+                      disabled={!repoUrl.trim() || verifyingRepo}
+                      className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-slate-950 font-bold text-xs font-mono uppercase tracking-wider transition-all cursor-pointer shrink-0 shadow-sm"
+                    >
+                      {verifyingRepo ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Verifying...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Verify Target</span>
+                        </>
+                      )}
+                    </button>
                   </div>
+
+                  {verifyError && (
+                    <div className="flex items-center gap-2 mt-2 text-xs font-mono text-rose-400 bg-rose-950/30 p-2.5 rounded-xl border border-rose-500/30">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{verifyError}</span>
+                    </div>
+                  )}
                 </div>
+
+                {/* VERIFIED SEPARATE REPOSITORY TARGET CARD */}
+                {targetDetails && (
+                  <div className="p-4 rounded-2xl bg-[#11231a] border-2 border-emerald-400/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded bg-emerald-400 text-slate-950 text-[10px] font-mono font-black uppercase tracking-wider">
+                          Active Target
+                        </span>
+                        <h3 className="font-bold text-base text-white font-mono">
+                          {targetDetails.fullName}
+                        </h3>
+                        {targetDetails.private ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-amber-400 bg-amber-950/50 px-2 py-0.5 rounded border border-amber-500/30 font-mono">
+                            <Lock className="w-2.5 h-2.5" /> Private
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-500/30 font-mono">
+                            <Unlock className="w-2.5 h-2.5" /> Public
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-slate-300 font-medium line-clamp-1">
+                        {targetDetails.description || 'No description provided.'}
+                      </p>
+
+                      <div className="flex items-center gap-4 text-[11px] font-mono text-emerald-300/80 pt-1">
+                        <span>Default Branch: <strong>{targetDetails.defaultBranch}</strong></span>
+                        {targetDetails.language && <span>Language: <strong>{targetDetails.language}</strong></span>}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      <a
+                        href={targetDetails.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-2 rounded-xl bg-black/40 hover:bg-black/60 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+                        title="Open on GitHub"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTargetDetails(null);
+                          setRepoUrl('');
+                        }}
+                        className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/50 hover:text-rose-300 text-slate-400 text-xs font-mono transition-colors cursor-pointer"
+                      >
+                        Change Target
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Commit Message Template */}
                 <div>
@@ -422,7 +570,7 @@ function DashboardContent() {
                   onClick={startAnalysis}
                   className="w-full py-4 sm:py-4.5 rounded-2xl bg-[#b2f540] hover:bg-[#a1e52f] text-slate-950 font-black text-sm sm:text-base uppercase tracking-wider border-2 border-black shadow-[4px_4px_0px_#000] hover:shadow-[2px_2px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all active:scale-[0.99] flex items-center justify-center gap-3 cursor-pointer"
                 >
-                  <span>Launch Remediation Session</span>
+                  <span>Launch Remediation for Selected Repo</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
@@ -438,25 +586,36 @@ function DashboardContent() {
           </div>
 
           {/* ═══════════════════════════════════════════════════════════
-              REPOSITORIES LIST SECTION
+              MODE 2 / OPTIONAL REPOSITORIES LIST
+              (Shown when user clicks "Browse All Repos" or enters repo)
              ═══════════════════════════════════════════════════════════ */}
-          {repos.length > 0 ? (
-            <RepoList
-              repos={repos}
-              onSelect={(url) => {
-                setRepoUrl(url);
-                window.scrollTo({ top: 180, behavior: 'smooth' });
-              }}
-            />
-          ) : (
-            githubConnected && !loading && (
-              <div className="text-center py-16 border-2 border-dashed border-slate-800 rounded-3xl bg-slate-950/40">
-                <Github className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <h3 className="text-base font-bold text-white mb-1">No Repositories Discovered</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                  We couldn&apos;t find any repositories on this account. Try clicking Refresh or paste a GitHub URL directly above.
-                </p>
-              </div>
+          {selectionMode === 'all' && (
+            repos.length > 0 ? (
+              <RepoList
+                repos={repos}
+                selectedUrl={repoUrl}
+                onSelect={(url) => {
+                  handleSelectRepo(url);
+                  window.scrollTo({ top: 180, behavior: 'smooth' });
+                }}
+              />
+            ) : (
+              githubConnected && !loading && (
+                <div className="text-center py-16 border-2 border-dashed border-slate-800 rounded-3xl bg-slate-950/40">
+                  <Github className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                  <h3 className="text-base font-bold text-white mb-1">No Repositories Loaded</h3>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto mb-4">
+                    Click Refresh to fetch account repositories or enter any separate repo above.
+                  </p>
+                  <button
+                    onClick={handleRefreshRepos}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-white transition-colors"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Fetch Account Repositories</span>
+                  </button>
+                </div>
+              )
             )
           )}
 
