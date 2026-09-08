@@ -2,400 +2,771 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
+  ArrowRight,
+  ArrowDown,
   ArrowUpRight,
-  MousePointer2,
-  GitBranch,
-  CheckCircle2,
-  Menu as MenuIcon,
-  X,
   Github,
   Twitter,
   Mail,
-  Check
+  CheckCircle2,
+  Bug,
+  GitPullRequest,
+  RefreshCw,
+  Workflow,
+  ShieldCheck,
+  Cpu,
+  Menu as MenuIcon,
+  X,
+  ExternalLink,
+  Code2,
+  Terminal,
+  Layers
 } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
 
 export default function LandingPage() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeCard, setActiveCard] = useState(2);
+  const [selectedFolder, setSelectedFolder] = useState(null);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
-  // Cards focused on what GitFix DOES, simple and clear without technical clutter
-  const cards = [
+  // 6 Core GitFix AI Folders (Directly inspired by Inspo #2 with physical folder cards)
+  const folders = [
     {
-      id: 0,
-      title: 'Bug Fixing',
-      subtitle: 'Fixes code errors automatically',
-      tag: 'Auto-Fixed',
-      color: 'from-[#7c3aed]/50 to-[#3b0764]/70',
-      border: 'border-purple-500/25',
-      badgeBg: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
-      rotation: 'lg:-rotate-12 lg:-translate-y-2',
-      zIndex: 'z-10',
-      codeSnippet: `// Detects broken code and fixes it
-def get_user(user_id: int):
-    return db.users.find(id=user_id)`
+      id: 'bug-detection',
+      name: 'Bug Detection',
+      tag: 'AST Scanner',
+      tabColor: 'bg-[#60a5fa]',
+      bodyColor: 'bg-[#3b82f6]',
+      textColor: 'text-white',
+      accentColor: 'text-blue-100',
+      icon: Bug,
+      rotation: 'hover:-rotate-2',
+      badge: 'Multi-Lang',
+      description: 'Deep Abstract Syntax Tree parsing that intercepts syntax errors, undefined references, and runtime exceptions.',
+      stats: 'Supports Python, TS, JS, Go',
+      code: `// Bug Detected: TypeError at line 42
+- const token = user.auth.getToken()
++ const token = user.auth?.getToken?.() ?? null`
     },
     {
-      id: 1,
-      title: 'CI/CD Healing',
-      subtitle: 'Fixes failing build pipelines',
-      tag: 'Build Passing',
-      color: 'from-[#f43f5e]/50 to-[#881337]/70',
-      border: 'border-rose-500/25',
-      badgeBg: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
-      rotation: 'lg:-rotate-6 lg:translate-y-4',
-      zIndex: 'z-15',
-      codeSnippet: `// Resolves GitHub Actions failures
-Workflow: CI Test Suite
-Status: All 24 tests passing`
+      id: 'auto-prs',
+      name: 'Autonomous PRs',
+      tag: 'GitHub Native',
+      tabColor: 'bg-[#4ade80]',
+      bodyColor: 'bg-[#22c55e]',
+      textColor: 'text-slate-950',
+      accentColor: 'text-emerald-900',
+      icon: GitPullRequest,
+      rotation: 'hover:rotate-2',
+      badge: 'Zero Friction',
+      description: 'Creates isolated branches, applies verified patches, writes clear changelogs, and opens ready-to-merge Pull Requests.',
+      stats: '1-Click Merge Verified',
+      code: `// Branch: gitfix/patch-sec-auth
+// Title: fix(auth): null-safe token extraction
+// All CI checks passing • Verified by GitFix`
     },
     {
-      id: 2,
-      title: 'Instant PRs',
-      subtitle: 'Verified fixes ready to merge',
-      tag: 'Ready to Merge',
-      color: 'from-[#0d9488]/60 via-[#115e59]/70 to-[#042f2e]/90',
-      border: 'border-teal-400/40 shadow-[0_0_40px_rgba(20,184,166,0.2)]',
-      badgeBg: 'bg-teal-400/20 text-teal-200 border-teal-400/30',
-      rotation: 'lg:rotate-0 lg:-translate-y-8',
-      zIndex: 'z-30',
-      isCenter: true,
-      codeSnippet: `- const user = db.find(id);
-+ const user = db.find({ id: userId });
-// 100% test pass rate • Zero bugs`
+      id: 'test-healing',
+      name: 'Test Healing',
+      tag: 'Auto-Retry',
+      tabColor: 'bg-[#fb923c]',
+      bodyColor: 'bg-[#f97316]',
+      textColor: 'text-white',
+      accentColor: 'text-orange-100',
+      icon: RefreshCw,
+      rotation: 'hover:-rotate-1',
+      badge: 'Loop Engine',
+      description: 'Discovers pytest, jest, and go test runners, executes suites, analyzes stack traces, and loops until all tests pass.',
+      stats: '100% Pass Rate Target',
+      code: `// Running pytest -v tests/
+// FAIL: test_auth_token_null_safety
+// Applying AI patch -> RE-TESTING...
+// PASS: All 18 tests passing successfully!`
     },
     {
-      id: 3,
-      title: 'Any Language',
-      subtitle: 'Python, TypeScript, Go & Rust',
-      tag: 'Universal',
-      color: 'from-[#10b981]/50 to-[#064e3b]/70',
-      border: 'border-emerald-500/25',
-      badgeBg: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-      rotation: 'lg:rotate-6 lg:translate-y-4',
-      zIndex: 'z-15',
-      codeSnippet: `// Works across your entire stack
-TypeScript • Python • Go • Rust
-Docker • GitHub Workflows`
+      id: 'ci-cd',
+      name: 'CI/CD Pipelines',
+      tag: 'Webhook Bot',
+      tabColor: 'bg-[#facc15]',
+      bodyColor: 'bg-[#eab308]',
+      textColor: 'text-slate-950',
+      accentColor: 'text-yellow-950',
+      icon: Workflow,
+      rotation: 'hover:rotate-1',
+      badge: 'Actions Ready',
+      description: 'Listens for GitHub Actions failures. When a build breaks, GitFix triggers instantly to diagnose and submit a PR fix.',
+      stats: 'Webhook Automated',
+      code: `on: workflow_run
+  workflows: ["CI Build"]
+  types: [completed]
+# GitFix auto-intercepts red builds`
     },
     {
-      id: 4,
-      title: 'Branch Safe',
-      subtitle: 'Never breaks your main branch',
-      tag: 'Safe',
-      color: 'from-[#3b82f6]/50 to-[#1e3a8a]/70',
-      border: 'border-blue-500/25',
-      badgeBg: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
-      rotation: 'lg:rotate-12 lg:-translate-y-2',
-      zIndex: 'z-10',
-      codeSnippet: `// Opens an isolated Pull Request
-Branch: gitfix/auto-remediation
-Review diff, test, and merge`
+      id: 'security-audits',
+      name: 'Security Audits',
+      tag: 'Vulnerability Guard',
+      tabColor: 'bg-[#f472b6]',
+      bodyColor: 'bg-[#ec4899]',
+      textColor: 'text-white',
+      accentColor: 'text-pink-100',
+      icon: ShieldCheck,
+      rotation: 'hover:-rotate-2',
+      badge: 'Static Analysis',
+      description: 'Integrates Bandit, ESLint Security, flake8, and go vet to patch SQL injection risks, insecure dependencies, and data leaks.',
+      stats: 'Zero Known CVEs',
+      code: `// Bandit Security Alert: B608 (SQL Injection)
+- query = f"SELECT * FROM users WHERE id = {user_id}"
++ query = "SELECT * FROM users WHERE id = %s", (user_id,)`
+    },
+    {
+      id: 'mission-control',
+      name: 'Mission Control',
+      tag: 'Live Telemetry',
+      tabColor: 'bg-white',
+      bodyColor: 'bg-slate-100',
+      textColor: 'text-slate-900',
+      accentColor: 'text-slate-600',
+      icon: Cpu,
+      rotation: 'hover:rotate-2',
+      badge: 'Real-Time',
+      description: 'Real-time WebSocket telemetry with animated health score gauge, live streaming compiler logs, and interactive diff inspector.',
+      stats: 'Live WebSocket Stream',
+      code: `[WS] Connected: session_71829
+[STATUS] AST Parse: OK (412 files)
+[STATUS] Health Score: 98/100 (+14 pts)`
     }
   ];
 
   const handleSubscribe = (e) => {
     e.preventDefault();
-    if (!newsletterEmail) return;
-    setSubscribed(true);
-    setTimeout(() => {
-      setNewsletterEmail('');
-      setSubscribed(false);
-    }, 3000);
+    if (newsletterEmail) {
+      setSubscribed(true);
+      setTimeout(() => {
+        setNewsletterEmail('');
+        setSubscribed(false);
+      }, 4000);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#070709] text-slate-100 font-sans flex flex-col justify-between relative overflow-hidden select-none">
+    <div className="min-h-screen bg-black text-white font-sans selection:bg-emerald-400 selection:text-black">
 
-      {/* Subtle Starfield Background */}
-      <div className="absolute inset-0 pointer-events-none opacity-40">
-        <div className="absolute top-1/4 left-[15%] w-1 h-1 bg-white rounded-full opacity-60" />
-        <div className="absolute top-1/3 right-[20%] w-1 h-1 bg-white rounded-full opacity-40" />
-        <div className="absolute top-1/2 left-[30%] w-1.5 h-1.5 bg-teal-300 rounded-full opacity-50 blur-[0.5px]" />
-        <div className="absolute top-2/3 right-[35%] w-1 h-1 bg-white rounded-full opacity-70" />
-      </div>
+      {/* ═══════════════════════════════════════════════════════════════
+          MINIMALIST TOP NAVIGATION BAR (Matching Inspo #1)
+         ═══════════════════════════════════════════════════════════════ */}
+      <header className="fixed top-0 left-0 w-full z-50 bg-[#063a23]/80 backdrop-blur-md border-b border-emerald-800/40 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+          
+          {/* Left: Brand Identity */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white border border-emerald-500/30 group-hover:scale-105 transition-transform">
+              <BrandLogo size={18} />
+            </div>
+            <span className="font-extrabold tracking-tight text-base sm:text-lg text-white group-hover:text-emerald-300 transition-colors">
+              GITFIX AI
+            </span>
+          </Link>
 
-      {/* Ambient Top Glow */}
-      <div
-        className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full pointer-events-none blur-[180px] opacity-25"
-        style={{ background: 'radial-gradient(circle, #0d9488 0%, #1e1b4b 60%, transparent 80%)' }}
-      />
+          {/* Center Links (Desktop) */}
+          <nav className="hidden md:flex items-center gap-1.5 bg-black/25 p-1 rounded-full border border-emerald-600/30 text-xs font-medium text-emerald-100">
+            <a href="#hero" className="px-4 py-1.5 rounded-full hover:bg-emerald-800/60 hover:text-white transition-all">
+              Home
+            </a>
+            <a href="#archive" className="px-4 py-1.5 rounded-full hover:bg-emerald-800/60 hover:text-white transition-all">
+              Modules
+            </a>
+            <a href="#manifesto" className="px-4 py-1.5 rounded-full hover:bg-emerald-800/60 hover:text-white transition-all">
+              Manifesto
+            </a>
+            <Link href="/docs" className="px-4 py-1.5 rounded-full hover:bg-emerald-800/60 hover:text-white transition-all">
+              Docs
+            </Link>
+          </nav>
 
-      {/* ═══════════════════════════════════════════════════════════
-          NAVBAR (Image #3 Style: Floating Island)
-         ═══════════════════════════════════════════════════════════ */}
-      <header className="relative z-50 w-full max-w-7xl mx-auto px-6 pt-7 pb-4 flex items-center justify-between">
-        {/* Left: Brand Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center p-1.5 group-hover:border-white/25 transition-colors">
-            <BrandLogo size={24} />
+          {/* Right CTA */}
+          <div className="hidden sm:flex items-center gap-3">
+            <Link
+              href="/auth"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white hover:bg-emerald-100 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95"
+            >
+              <span>Try GitFix</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
-          <span className="font-semibold tracking-tight text-white text-sm hidden sm:inline">
-            GitFix<span className="text-white/40 font-normal">AI</span>
-          </span>
-        </Link>
 
-        {/* Center: Floating Island Navigation */}
-        <nav className="hidden md:flex items-center gap-8 px-7 py-2.5 rounded-full bg-[#15161b]/80 border border-white/[0.09] backdrop-blur-xl shadow-xl text-xs font-medium text-slate-300">
-          <Link href="/dashboard" className="hover:text-white transition-colors">
-            Repositories
-          </Link>
-          <Link href="/docs" className="hover:text-white transition-colors">
-            Docs
-          </Link>
-          <Link href="/history" className="hover:text-white transition-colors">
-            History
-          </Link>
-        </nav>
-
-        {/* Right: Login & Launch Button */}
-        <div className="flex items-center gap-4">
-          <Link
-            href="/auth"
-            className="hidden sm:inline-block text-xs font-medium text-slate-300 hover:text-white transition-colors"
-          >
-            Login
-          </Link>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="px-5 py-2.5 rounded-full text-xs font-semibold text-black bg-white hover:bg-slate-200 transition-all shadow-md active:scale-95 cursor-pointer"
-          >
-            Launch Console
-          </button>
+          {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-slate-400 hover:text-white"
+            className="md:hidden p-2 rounded-lg text-emerald-200 hover:text-white hover:bg-emerald-800/50"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
           </button>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-[#052b1a] border-b border-emerald-800 px-5 py-6 space-y-4">
+            <a
+              href="#hero"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-base font-semibold text-emerald-100 hover:text-white"
+            >
+              Home
+            </a>
+            <a
+              href="#archive"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-base font-semibold text-emerald-100 hover:text-white"
+            >
+              Modules Archive
+            </a>
+            <a
+              href="#manifesto"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-base font-semibold text-emerald-100 hover:text-white"
+            >
+              Manifesto
+            </a>
+            <Link
+              href="/docs"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-base font-semibold text-emerald-100 hover:text-white"
+            >
+              Documentation
+            </Link>
+            <div className="pt-2">
+              <Link
+                href="/auth"
+                className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-full bg-white text-slate-950 font-bold text-sm uppercase tracking-wider"
+              >
+                <span>Launch GitFix</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* Mobile Menu Dropdown */}
-      {mobileMenuOpen && (
-        <div className="md:hidden relative z-50 mx-6 mb-4 p-5 rounded-2xl bg-[#121319] border border-white/10 flex flex-col gap-3 text-xs">
-          <Link href="/dashboard" className="text-slate-200 py-1">Repositories</Link>
-          <Link href="/docs" className="text-slate-200 py-1">Docs</Link>
-          <Link href="/history" className="text-slate-200 py-1">History</Link>
-          <Link href="/auth" className="text-slate-200 py-1">Login</Link>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          SECTION 01: HERO POSTER (Directly inspired by Inspo #1: 1.png)
+          Deep saturated green background, giant condensed typography,
+          collage sticker elements, and small tactile CTA.
+         ═══════════════════════════════════════════════════════════════ */}
+      <section
+        id="hero"
+        className="relative min-h-screen pt-28 sm:pt-36 pb-20 sm:pb-28 bg-gradient-to-b from-[#073f27] via-[#08472c] to-[#06331f] overflow-hidden flex flex-col justify-center"
+      >
+        {/* Subtle Ambient Grain & Radiance */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Sticker 1: OMG! Comic Sticker (Top Left floating) */}
+        <div className="absolute top-28 left-6 sm:top-36 sm:left-14 md:left-24 z-20 hover:scale-110 transition-transform duration-300">
+          <div className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 -rotate-12 drop-shadow-[0_12px_24px_rgba(0,0,0,0.5)]">
+            <Image
+              src="/ui/asset/sticker_omg.png"
+              alt="Bug Intercepted OMG Sticker"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         </div>
-      )}
 
-      {/* ═══════════════════════════════════════════════════════════
-          HERO SECTION (Clean, Punchy, Simple - No Fluff Pill)
-         ═══════════════════════════════════════════════════════════ */}
-      <section className="relative z-20 w-full max-w-5xl mx-auto px-6 pt-14 sm:pt-20 pb-6 text-center flex flex-col items-center">
-        
-        {/* Floating Cursors (Matching Image #3 Robert & Clarissa style) */}
-        <div className="hidden lg:flex items-center gap-1.5 absolute top-20 left-6 px-3 py-1 rounded-full bg-[#0d9488] text-white text-[11px] font-medium shadow-lg border border-teal-300/30">
-          <MousePointer2 className="w-3 h-3 fill-current" />
-          <span>Robert</span>
+        {/* Sticker 2: Retro Computer (Top Right floating) */}
+        <div className="absolute top-28 right-6 sm:top-36 sm:right-12 md:right-20 z-20 hover:scale-110 transition-transform duration-300">
+          <div className="relative w-18 h-18 sm:w-26 sm:h-26 md:w-32 md:h-32 rotate-12 drop-shadow-[0_12px_24px_rgba(0,0,0,0.5)]">
+            <Image
+              src="/ui/asset/sticker_pc.png"
+              alt="Retro Pixel PC Sticker"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         </div>
 
-        <div className="hidden lg:flex items-center gap-1.5 absolute top-28 right-6 px-3 py-1 rounded-full bg-[#f43f5e] text-white text-[11px] font-medium shadow-lg border border-rose-300/30">
-          <MousePointer2 className="w-3 h-3 fill-current" />
-          <span>Clarissa</span>
-        </div>
-
-        {/* Main Headline (Image #3 Mixed Typography) */}
-        <h1 className="text-4xl sm:text-6xl md:text-[72px] font-bold tracking-[-0.03em] text-white leading-[1.06] max-w-3xl mb-5">
-          Heal Your Codebase<br />
-          <span className="font-serif italic font-normal text-slate-200">Automate</span> Your PRs
-        </h1>
-
-        {/* Short, simple 1-line subtitle explaining what it does */}
-        <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed mb-8">
-          GitFix automatically diagnoses broken builds, fixes code errors, and opens verified Pull Requests on GitHub.
-        </p>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════
-          3D FANNED CARDS CAROUSEL (Image #3 Style)
-         ═══════════════════════════════════════════════════════════ */}
-      <section className="relative z-30 w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-20">
-        <div className="flex flex-col lg:flex-row items-center justify-center -space-y-8 lg:-space-y-0 lg:-space-x-8 xl:-space-x-10 transition-all duration-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           
-          {cards.map((card) => {
-            const isSelected = activeCard === card.id;
-            
-            return (
-              <div
-                key={card.id}
-                onClick={() => setActiveCard(card.id)}
-                className={`w-full max-w-[340px] sm:max-w-[380px] lg:w-[320px] xl:w-[340px] rounded-3xl p-6 sm:p-7 bg-gradient-to-b ${card.color} border ${card.border} backdrop-blur-2xl transition-all duration-500 cursor-pointer ${card.rotation} ${card.zIndex} ${
-                  isSelected ? 'lg:scale-105 lg:-translate-y-10 shadow-2xl z-40' : 'hover:scale-[1.02] hover:-translate-y-2'
-                }`}
-                style={{
-                  minHeight: card.isCenter ? '360px' : '320px'
-                }}
-              >
-                {/* Card Header */}
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                      {card.title}
-                    </h3>
-                    <p className="text-xs text-white/70 mt-0.5">
-                      {card.subtitle}
-                    </p>
+          {/* Top Pill Tag */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/40 border border-emerald-400/30 text-[11px] font-mono uppercase tracking-widest text-emerald-300 mb-6 sm:mb-8 backdrop-blur-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Autonomous Code Healing Engine</span>
+          </div>
+
+          {/* MASSIVE STATEMENT HEADLINE (Matching Inspo #1 typography style) */}
+          <div className="relative my-2 sm:my-4">
+            <h1 className="text-[14vw] sm:text-[12vw] lg:text-[9.8vw] font-black uppercase tracking-[-0.05em] leading-[0.88] text-[#1ae38e] drop-shadow-[0_8px_30px_rgba(0,0,0,0.4)] select-none">
+              HEAL YOUR
+              <br />
+              CODEBASE.
+            </h1>
+
+            {/* Embedded Live Code Snapshot Card (Interacting with the headline like Inspo #1) */}
+            <div className="relative -mt-6 sm:-mt-10 lg:-mt-14 max-w-lg mx-auto z-20 px-2">
+              <div className="bg-[#0b131b] border-2 border-emerald-400/40 rounded-2xl p-4 sm:p-5 shadow-[0_20px_50px_rgba(0,0,0,0.6)] text-left font-mono text-xs relative backdrop-blur-md">
+                
+                {/* Sticker 3: Band-Aid Sticker angled across the code snippet */}
+                <div className="absolute -top-6 -right-6 sm:-top-8 sm:-right-8 w-24 h-14 sm:w-32 sm:h-18 rotate-12 z-30 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] hover:scale-110 transition-transform">
+                  <Image
+                    src="/ui/asset/sticker_bandaid.png"
+                    alt="Band-Aid Healing Sticker"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800 text-[11px] text-slate-400">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+                    <span className="ml-2 text-slate-300 font-semibold">gitfix-agent.py</span>
                   </div>
-
-                  {card.isCenter ? (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push('/dashboard');
-                      }}
-                      className="px-3.5 py-1.5 rounded-full bg-[#e2f952] text-black font-bold text-xs flex items-center gap-1 shadow-md hover:bg-lime-300 transition-all cursor-pointer shrink-0"
-                    >
-                      <span>Get Started</span>
-                      <ArrowUpRight className="w-3.5 h-3.5" />
-                    </button>
-                  ) : (
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-medium border ${card.badgeBg} shrink-0`}>
-                      {card.tag}
-                    </span>
-                  )}
+                  <span className="text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Tests Passed
+                  </span>
                 </div>
 
-                {/* Code Snippet Box */}
-                <div className="mt-5 p-4 rounded-2xl bg-black/40 border border-white/10 font-mono text-[11px] leading-relaxed text-slate-200 overflow-x-auto">
-                  <pre className="whitespace-pre-wrap">{card.codeSnippet}</pre>
-                </div>
-
-                {/* Card Footer */}
-                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-white/60">
-                  <span className="text-[11px]">100% automated</span>
-                  <CheckCircle2 className="w-4 h-4 text-white/80" />
+                <div className="mt-3 space-y-1 text-slate-300 leading-relaxed text-[11px] sm:text-xs">
+                  <p className="text-red-400/90 font-mono">- def calculate_discount(price: float, rate: float):</p>
+                  <p className="text-red-400/90 font-mono">- &nbsp;&nbsp;return price * rate # ZeroDivisionError</p>
+                  <p className="text-emerald-400 font-mono font-semibold">+ def calculate_discount(price: float, rate: float):</p>
+                  <p className="text-emerald-400 font-mono font-semibold">+ &nbsp;&nbsp;return max(0.0, price * (1.0 - (rate or 0.0)))</p>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          </div>
+
+          {/* Subtitle */}
+          <p className="mt-8 sm:mt-10 max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-emerald-100/90 font-medium leading-relaxed">
+            Diagnoses broken builds, fixes multi-line code errors across Python, TypeScript, & Go, runs verified tests, and opens ready-to-merge Pull Requests.
+          </p>
+
+          {/* Tactile Button Pair (Matching Inspo #1 book tickets button) */}
+          <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            
+            {/* Primary Pill Button with arrow compartment */}
+            <Link
+              href="/auth"
+              className="inline-flex items-center rounded-xl bg-white hover:bg-emerald-50 text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider overflow-hidden shadow-xl active:scale-95 transition-all group"
+            >
+              <span className="px-5 sm:px-6 py-3.5">Start Healing Free</span>
+              <span className="bg-slate-200/90 group-hover:bg-emerald-200 px-3.5 py-3.5 flex items-center justify-center transition-colors">
+                <ArrowRight className="w-4 h-4 text-slate-950" />
+              </span>
+            </Link>
+
+            {/* Secondary Anchor */}
+            <a
+              href="#archive"
+              className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl bg-black/30 hover:bg-black/50 text-emerald-200 hover:text-white font-semibold text-xs sm:text-sm border border-emerald-400/30 backdrop-blur-sm transition-all"
+            >
+              <span>Explore Archive</span>
+              <ArrowDown className="w-3.5 h-3.5 animate-bounce" />
+            </a>
+          </div>
 
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════
-          MASSIVE MINIMALIST FOOTER (Brought back from Image #2)
-         ═══════════════════════════════════════════════════════════ */}
-      <footer className="w-full bg-[#030508] border-t border-white/[0.07] px-6 sm:px-10 md:px-14 lg:px-16 pt-16 sm:pt-20 pb-10">
-        
-        {/* Top Footer Row: Newsletter & Navigation Columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 pb-16">
+
+      {/* ═══════════════════════════════════════════════════════════════
+          SECTION 02: THE ARCHIVE / FOLDER GRID (Inspired by Inspo #2: 2.png)
+          Vivid electric royal blue background, physical colorful folder
+          cards with tabs, popping illustrations & interactive modules.
+         ═══════════════════════════════════════════════════════════════ */}
+      <section
+        id="archive"
+        className="relative py-24 sm:py-32 bg-[#1d4ed8] text-white overflow-hidden"
+      >
+        {/* Decorative corner tag matching Inspo #2 yellow corner tag */}
+        <div className="absolute top-0 left-0 w-28 h-28 sm:w-36 sm:h-36 bg-[#facc15] rounded-br-full flex items-center justify-center text-slate-950 font-black text-xs sm:text-sm uppercase -rotate-12 shadow-lg z-10 pt-2 pl-2 pointer-events-none">
+          #GITFIX
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
-          {/* Left Column: Brand tag, Input, Socials */}
-          <div className="lg:col-span-5 flex flex-col gap-6">
-            <div className="text-xs font-mono text-slate-400 tracking-wider">
-              Heal Different™
-            </div>
+          {/* Section Header */}
+          <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+            <span className="text-xs font-mono uppercase tracking-widest text-blue-200 bg-white/10 px-3.5 py-1.5 rounded-full border border-white/20">
+              Interactive System Modules
+            </span>
+            <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight mt-4 text-white">
+              The Intelligence Archive
+            </h2>
+            <p className="mt-4 text-sm sm:text-base text-blue-100 font-medium">
+              Click any folder to inspect how GitFix autonomously analyzes, heals, and tests your repositories.
+            </p>
+          </div>
 
-            {/* Newsletter input + button */}
-            <form onSubmit={handleSubscribe} className="flex items-center gap-2 max-w-sm">
-              <input
-                type="email"
-                required
-                value={newsletterEmail}
-                onChange={(e) => setNewsletterEmail(e.target.value)}
-                placeholder="email@example.com"
-                className="flex-1 bg-[#101420] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-white/25 transition-colors font-mono"
-              />
+          {/* PHYSICAL FOLDER GRID (Matching 2.png layout: colored tabs, bodies, and pop-outs) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 pt-6">
+            {folders.map((f) => {
+              const IconComp = f.icon;
+              return (
+                <div
+                  key={f.id}
+                  onClick={() => setSelectedFolder(f)}
+                  className="group relative cursor-pointer pt-6"
+                >
+                  {/* Physical Folder Tab */}
+                  <div
+                    className={`absolute top-0 left-6 h-7 px-5 rounded-t-2xl font-mono text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition-transform duration-300 group-hover:-translate-y-1.5 ${f.tabColor} ${
+                      f.id === 'mission-control' ? 'text-slate-900' : 'text-slate-950'
+                    }`}
+                  >
+                    <IconComp className="w-3.5 h-3.5" />
+                    <span>{f.tag}</span>
+                  </div>
+
+                  {/* Physical Folder Body */}
+                  <div
+                    className={`${f.bodyColor} ${f.textColor} rounded-3xl p-6 sm:p-7 shadow-[0_15px_35px_rgba(0,0,0,0.25)] border border-white/20 transition-all duration-300 group-hover:-translate-y-2.5 group-hover:shadow-[0_25px_50px_rgba(0,0,0,0.35)] relative overflow-hidden flex flex-col justify-between min-h-[260px]`}
+                  >
+                    {/* Top Section */}
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <span className={`text-xs font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-black/15 ${f.accentColor}`}>
+                          {f.badge}
+                        </span>
+                        <ArrowUpRight className="w-5 h-5 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                      </div>
+
+                      <h3 className="text-2xl font-black tracking-tight mb-2 uppercase">
+                        {f.name}
+                      </h3>
+                      <p className="text-xs sm:text-sm font-medium leading-relaxed opacity-90 line-clamp-3">
+                        {f.description}
+                      </p>
+                    </div>
+
+                    {/* Bottom Status / Stats */}
+                    <div className="mt-6 pt-4 border-t border-black/10 flex items-center justify-between text-xs font-mono">
+                      <span className="font-semibold">{f.stats}</span>
+                      <span className="underline font-bold text-[11px]">Inspect Module &rarr;</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+
+        {/* Modal Drawer for Clicked Folder */}
+        {selectedFolder && (
+          <div
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+            onClick={() => setSelectedFolder(null)}
+          >
+            <div
+              className="bg-slate-900 border border-slate-700 rounded-3xl max-w-xl w-full p-6 sm:p-8 text-white shadow-2xl relative"
+              onClick={(e) => e.stopPropagation()}
+            >
               <button
-                type="submit"
-                className="px-5 py-2.5 rounded-xl bg-white text-black font-semibold text-xs hover:bg-slate-200 transition-all active:scale-[0.98] cursor-pointer whitespace-nowrap"
+                onClick={() => setSelectedFolder(null)}
+                className="absolute top-5 right-5 p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300"
               >
-                {subscribed ? 'Subscribed!' : 'Join for free'}
+                <X className="w-5 h-5" />
               </button>
-            </form>
 
-            {/* Social icons */}
-            <div className="flex items-center gap-3">
-              <a
-                href="https://github.com/AryanSingh64/GItFIxAI"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-white/20 transition-colors"
-                title="GitHub"
-              >
-                <Github className="w-3.5 h-3.5" />
-              </a>
-              <a
-                href="#"
-                className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-white/20 transition-colors"
-                title="Twitter / X"
-              >
-                <Twitter className="w-3.5 h-3.5" />
-              </a>
-              <a
-                href="mailto:contact@gitfix.ai"
-                className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-white/20 transition-colors"
-                title="Email"
-              >
-                <Mail className="w-3.5 h-3.5" />
-              </a>
+              <div className="flex items-center gap-3 mb-4">
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-slate-950 font-bold ${selectedFolder.tabColor}`}>
+                  <selectedFolder.icon className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-xs font-mono uppercase text-emerald-400">{selectedFolder.tag}</span>
+                  <h3 className="text-2xl font-black">{selectedFolder.name}</h3>
+                </div>
+              </div>
+
+              <p className="text-sm text-slate-300 leading-relaxed mb-5">
+                {selectedFolder.description}
+              </p>
+
+              {/* Code Snippet Box */}
+              <div className="bg-black/80 rounded-2xl p-4 border border-slate-800 font-mono text-xs text-emerald-300 leading-relaxed mb-6 overflow-x-auto">
+                <pre>{selectedFolder.code}</pre>
+              </div>
+
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-xs font-mono text-slate-400">Target: {selectedFolder.stats}</span>
+                <Link
+                  href="/auth"
+                  className="px-5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2"
+                >
+                  <span>Launch Module</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
             </div>
           </div>
+        )}
+      </section>
 
-          {/* Right Navigation Columns */}
-          <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8 text-xs font-normal">
-            <div className="space-y-3">
-              <h4 className="font-semibold text-white tracking-wide">Product</h4>
-              <ul className="space-y-2.5 text-slate-400">
-                <li><Link href="/dashboard" className="hover:text-white transition-colors">Repositories</Link></li>
-                <li><Link href="/dashboard" className="hover:text-white transition-colors">Bug Remediation</Link></li>
-                <li><Link href="/history" className="hover:text-white transition-colors">Run History</Link></li>
-              </ul>
-            </div>
 
-            <div className="space-y-3">
-              <h4 className="font-semibold text-white tracking-wide">Developers</h4>
-              <ul className="space-y-2.5 text-slate-400">
-                <li><Link href="/docs" className="hover:text-white transition-colors">Documentation</Link></li>
-                <li><a href="https://github.com/AryanSingh64/GItFIxAI" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub Repository</a></li>
-                <li><Link href="/auth" className="hover:text-white transition-colors">Sign In</Link></li>
-              </ul>
-            </div>
+      {/* ═══════════════════════════════════════════════════════════════
+          SECTION 03: "WHAT WE DO" MANIFESTO (Inspired by Inspo #3: 3.png)
+          Pitch black background, massive typography "We exist to heal
+          broken code" surrounded by colorful floating tilted stickers.
+         ═══════════════════════════════════════════════════════════════ */}
+      <section
+        id="manifesto"
+        className="relative py-28 sm:py-40 bg-[#000000] text-white overflow-hidden flex flex-col justify-center items-center"
+      >
+        {/* Floating Stickers & Badges (Matching Inspo #3 sticker collage composition) */}
 
-            <div className="space-y-3">
-              <h4 className="font-semibold text-white tracking-wide">Company</h4>
-              <ul className="space-y-2.5 text-slate-400">
-                <li><a href="#about" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#careers" className="hover:text-white transition-colors">Careers</a></li>
-                <li><a href="mailto:contact@gitfix.ai" className="hover:text-white transition-colors">Contact</a></li>
-              </ul>
-            </div>
+        {/* Sticker: 100% VERIFIED PRS (Pink badge - top left) */}
+        <div className="absolute top-12 left-6 sm:top-20 sm:left-20 -rotate-12 hover:rotate-0 transition-transform duration-300 cursor-pointer z-20">
+          <div className="px-4 py-2 rounded-2xl bg-[#ec4899] text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg border-2 border-pink-300/40">
+            100% VERIFIED PRS
           </div>
-
         </div>
 
-        {/* ─── MASSIVE ULTRA-BOLD WORDMARK (Image 2 style) ─── */}
-        <div className="pt-6 pb-4 border-t border-white/[0.06] flex items-center justify-between gap-4 overflow-hidden">
-          <div className="flex items-baseline gap-4 w-full">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 shrink-0 flex items-center justify-center">
-              <BrandLogo size={64} />
+        {/* Sticker: BAND-AID ASSET (Top right) */}
+        <div className="absolute top-14 right-8 sm:top-20 sm:right-28 rotate-12 hover:rotate-0 transition-transform duration-300 cursor-pointer z-20">
+          <div className="relative w-24 h-14 sm:w-32 sm:h-18 drop-shadow-[0_10px_20px_rgba(255,255,255,0.15)]">
+            <Image
+              src="/ui/asset/sticker_bandaid.png"
+              alt="GitFix Code Band-Aid"
+              fill
+              className="object-contain"
+            />
+          </div>
+        </div>
+
+        {/* Sticker: ZERO DOWNTIME (Emerald badge - mid left) */}
+        <div className="absolute top-1/2 -translate-y-24 left-4 sm:left-14 rotate-6 hover:rotate-0 transition-transform duration-300 cursor-pointer z-20">
+          <div className="px-4 py-2 rounded-full bg-[#10b981] text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg border-2 border-emerald-300">
+            ZERO DOWNTIME
+          </div>
+        </div>
+
+        {/* Sticker: RETRO COMPUTER ASSET (Mid right) */}
+        <div className="absolute top-1/2 -translate-y-16 right-6 sm:right-16 -rotate-6 hover:scale-110 transition-transform duration-300 cursor-pointer z-20">
+          <div className="relative w-20 h-20 sm:w-28 sm:h-28 drop-shadow-[0_12px_24px_rgba(0,0,0,0.5)]">
+            <Image
+              src="/ui/asset/sticker_pc.png"
+              alt="Retro Pixel PC"
+              fill
+              className="object-contain"
+            />
+          </div>
+        </div>
+
+        {/* Sticker: AUTO LINTING (Orange badge - bottom left) */}
+        <div className="absolute bottom-16 left-8 sm:bottom-24 sm:left-24 -rotate-6 hover:rotate-0 transition-transform duration-300 cursor-pointer z-20">
+          <div className="px-4 py-2 rounded-2xl bg-[#f97316] text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg border-2 border-orange-300">
+            AUTO LINTING
+          </div>
+        </div>
+
+        {/* Sticker: SELF-HEALING TESTS (Cyan badge - bottom right) */}
+        <div className="absolute bottom-16 right-8 sm:bottom-24 sm:right-24 rotate-12 hover:rotate-0 transition-transform duration-300 cursor-pointer z-20">
+          <div className="px-4 py-2 rounded-full bg-[#06b6d4] text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg border-2 border-cyan-200">
+            SELF-HEALING TESTS
+          </div>
+        </div>
+
+        {/* Center Editorial Manifesto Copy */}
+        <div className="max-w-4xl mx-auto px-6 text-center relative z-10 my-10">
+          <h2 className="text-[12vw] sm:text-[9vw] lg:text-[7.5vw] font-black uppercase tracking-[-0.04em] leading-[0.9] text-white select-none">
+            We exist to
+            <br />
+            <span className="text-emerald-400">heal broken</span>
+            <br />
+            codebases.
+          </h2>
+
+          <p className="mt-8 max-w-xl mx-auto text-sm sm:text-base md:text-lg text-slate-400 font-medium leading-relaxed">
+            Engineers waste 30% of their sprints babysitting CI failures, hunting broken imports, and fixing lint errors. GitFix turns that painful cycle into one automated command.
+          </p>
+        </div>
+      </section>
+
+
+      {/* ═══════════════════════════════════════════════════════════════
+          SECTION 04: CONTACT CTA & EDITORIAL FOOTER (Inspired by Inspo #4: 4.png)
+          Lime green grid background texture (using footer.png), scallop
+          wavy divider, pill CTA button, and massive wordmark footer.
+         ═══════════════════════════════════════════════════════════════ */}
+      <section className="relative bg-[#faf7f2] text-slate-950 overflow-hidden">
+        
+        {/* Upper Lime Grid Accent Area (Matching Inspo #4 grid + tickets layout) */}
+        <div
+          className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-8 border-b-4 border-slate-950 flex flex-col items-center text-center"
+          style={{
+            backgroundImage: `url('/ui/asset/footer.png')`,
+            backgroundSize: '220px 220px',
+            backgroundRepeat: 'repeat'
+          }}
+        >
+          {/* Subtle Dark Overlay to make content punchy and readable */}
+          <div className="absolute inset-0 bg-lime-400/20 pointer-events-none" />
+
+          {/* Floating Ticket Badges (Matching Inspo #4 tickets) */}
+          <div className="relative z-10 w-full max-w-4xl flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div className="px-4 py-1.5 rounded-lg bg-[#22c55e] text-slate-950 font-mono font-black text-xs uppercase tracking-wider border-2 border-black shadow-[3px_3px_0px_#000] -rotate-3">
+              RESERVE YOUR REPO
             </div>
+            <div className="px-4 py-1.5 rounded-lg bg-[#3b82f6] text-white font-mono font-black text-xs uppercase tracking-wider border-2 border-black shadow-[3px_3px_0px_#000] rotate-3">
+              100% FREE FOR OPEN SOURCE
+            </div>
+          </div>
+
+          {/* Central Oval Action Pill (Matching Inspo #4 "Book a Call" button) */}
+          <div className="relative z-10 max-w-xl w-full my-4">
+            <Link
+              href="/auth"
+              className="inline-flex items-center justify-center w-full max-w-md py-4 sm:py-5 px-8 rounded-full bg-[#facc15] hover:bg-[#eab308] text-slate-950 font-black text-lg sm:text-2xl uppercase tracking-tight border-3 border-black shadow-[6px_6px_0px_#000] hover:shadow-[2px_2px_0px_#000] hover:translate-x-1 hover:translate-y-1 transition-all active:scale-[0.98]"
+            >
+              <span>Connect GitHub Repo</span>
+              <ArrowRight className="w-6 h-6 ml-3" />
+            </Link>
+          </div>
+
+          <p className="relative z-10 text-xs sm:text-sm font-mono font-bold text-slate-900 mt-4 max-w-md">
+            Zero configuration required. Intercepts failures, applies verified fixes, and opens ready PRs.
+          </p>
+        </div>
+
+        {/* Scalloped Wavy Divider (Matching Inspo #4 scallop transition) */}
+        <div className="w-full overflow-hidden leading-none -mt-1">
+          <svg
+            viewBox="0 0 1200 40"
+            className="w-full h-8 sm:h-12 text-[#faf7f2] fill-current"
+            preserveAspectRatio="none"
+          >
+            <path d="M0,0 C150,40 350,-20 500,20 C650,40 850,-20 1000,20 C1100,40 1180,10 1200,0 L1200,40 L0,40 Z" />
+          </svg>
+        </div>
+
+        {/* Lower Editorial Footer Area */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16">
+          
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-12 pb-16 border-b-2 border-slate-300">
             
-            <div className="text-[15vw] font-black tracking-[-0.06em] text-white select-none leading-none w-full">
-              gitfix
+            {/* Left: Brand Description */}
+            <div className="md:col-span-6 space-y-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white">
+                  <BrandLogo size={20} />
+                </div>
+                <span className="text-xl font-black tracking-tight text-slate-950 uppercase">
+                  GitFix AI
+                </span>
+              </div>
+
+              <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed max-w-sm">
+                Autonomous code healing engine for modern software teams. Scan, diagnose, test, and ship verified PRs directly to GitHub.
+              </p>
+
+              {/* Newsletter Form */}
+              <form onSubmit={handleSubscribe} className="pt-2 max-w-md">
+                <div className="flex items-center rounded-xl border-2 border-black bg-white overflow-hidden shadow-[3px_3px_0px_#000]">
+                  <input
+                    type="email"
+                    required
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    placeholder="Enter engineering email..."
+                    className="w-full px-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2.5 bg-black hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider shrink-0 transition-colors"
+                  >
+                    {subscribed ? 'Joined!' : 'Join'}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Right: Quick Links */}
+            <div className="md:col-span-6 grid grid-cols-2 sm:grid-cols-3 gap-6 text-xs font-mono">
+              <div>
+                <div className="font-bold text-slate-950 uppercase tracking-wider mb-3">
+                  Product
+                </div>
+                <ul className="space-y-2 text-slate-600">
+                  <li><a href="#archive" className="hover:text-black">Bug Detection</a></li>
+                  <li><a href="#archive" className="hover:text-black">Autonomous PRs</a></li>
+                  <li><a href="#archive" className="hover:text-black">Test Healing</a></li>
+                  <li><a href="#archive" className="hover:text-black">CI/CD Webhooks</a></li>
+                </ul>
+              </div>
+
+              <div>
+                <div className="font-bold text-slate-950 uppercase tracking-wider mb-3">
+                  Resources
+                </div>
+                <ul className="space-y-2 text-slate-600">
+                  <li><Link href="/docs" className="hover:text-black">Documentation</Link></li>
+                  <li><Link href="/auth" className="hover:text-black">Mission Control</Link></li>
+                  <li><a href="https://github.com/AryanSingh64/GItFIxAI" target="_blank" rel="noreferrer" className="hover:text-black">GitHub Repo</a></li>
+                  <li><Link href="/auth" className="hover:text-black">API Status</Link></li>
+                </ul>
+              </div>
+
+              <div>
+                <div className="font-bold text-slate-950 uppercase tracking-wider mb-3">
+                  Social
+                </div>
+                <div className="flex items-center gap-3">
+                  <a
+                    href="https://github.com/AryanSingh64/GItFIxAI"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:scale-110 transition-transform"
+                  >
+                    <Github className="w-4 h-4" />
+                  </a>
+                  <a
+                    href="https://twitter.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:scale-110 transition-transform"
+                  >
+                    <Twitter className="w-4 h-4" />
+                  </a>
+                  <a
+                    href="mailto:contact@gitfix.ai"
+                    className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:scale-110 transition-transform"
+                  >
+                    <Mail className="w-4 h-4" />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* MASSIVE WORDMARK (Matching Inspo #4 "bitesized" oversized typography) */}
+          <div className="pt-10 flex flex-col sm:flex-row items-center justify-between gap-6 select-none">
+            <div className="flex items-center gap-3">
+              <span className="text-[14vw] sm:text-[11vw] font-black uppercase tracking-[-0.07em] leading-none text-slate-950">
+                gitfix
+              </span>
+              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-black flex items-center justify-center text-white shrink-0">
+                <BrandLogo size={32} />
+              </div>
+            </div>
+
+            <div className="text-right text-xs font-mono text-slate-500">
+              <p>&copy; {new Date().getFullYear()} GitFix AI. All rights reserved.</p>
+              <p className="text-[11px] text-slate-400 mt-1">Autonomous Code Intelligence &bull; Built for Builders</p>
             </div>
           </div>
+
         </div>
 
-        {/* Bottom Copyright line */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-600 font-mono">
-          <div>© 2026 GitFixAI Group. All rights reserved.</div>
-          <div className="flex items-center gap-4 text-slate-500">
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-            <span>•</span>
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-          </div>
-        </div>
-
-      </footer>
+      </section>
 
     </div>
   );
