@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
 import {
   Mail,
   Lock,
@@ -14,7 +16,7 @@ import {
   ArrowLeft,
   Github,
   Search,
-  Command
+  Sparkles
 } from 'lucide-react';
 import {
   signInWithEmail,
@@ -25,7 +27,6 @@ import {
   updatePassword
 } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
-import Link from 'next/link';
 import BrandLogo from '@/components/BrandLogo';
 
 const TABS = {
@@ -69,8 +70,12 @@ function AuthForm() {
       router.push('/dashboard');
     } catch (err) {
       if (err.code === 'auth/operation-not-allowed') {
-        showMsg('error', 'Email/Password sign-in is not enabled in Firebase Console. Enable it in Auth > Sign-in method.');
-      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+        showMsg('error', 'Email/Password sign-in is not enabled in Firebase Console.');
+      } else if (
+        err.code === 'auth/invalid-credential' ||
+        err.code === 'auth/wrong-password' ||
+        err.code === 'auth/user-not-found'
+      ) {
         showMsg('error', 'Invalid email or password. Please check your credentials.');
       } else {
         showMsg('error', err.message || 'Login failed.');
@@ -92,7 +97,7 @@ function AuthForm() {
       setTimeout(() => router.push('/dashboard'), 1000);
     } catch (err) {
       if (err.code === 'auth/operation-not-allowed') {
-        showMsg('error', 'Email/Password sign-up is not enabled in Firebase Console. Enable it in Auth > Sign-in method.');
+        showMsg('error', 'Email/Password sign-up is not enabled in Firebase Console.');
       } else if (err.code === 'auth/email-already-in-use') {
         showMsg('error', 'An account already exists with this email address. Please sign in instead.');
       } else if (err.code === 'auth/weak-password') {
@@ -111,7 +116,7 @@ function AuthForm() {
     setLoading(true);
     try {
       await resetPassword(email);
-      showMsg('success', 'Password reset link sent. Check your email inbox.');
+      showMsg('success', 'Password reset link sent. Check your inbox.');
     } catch (err) {
       showMsg('error', err.message || 'Failed to send reset email.');
     } finally {
@@ -159,46 +164,49 @@ function AuthForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eef1f6] flex items-center justify-center p-3 sm:p-6 md:p-10 select-none font-sans relative">
-      
-      {/* Back to Home link */}
-      <Link
-        href="/"
-        className="absolute top-5 left-5 sm:top-8 sm:left-8 flex items-center gap-2 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors z-20"
-      >
-        <ArrowLeft className="w-4 h-4" /> Back to Home
-      </Link>
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-white font-sans selection:bg-slate-900 selection:text-white">
 
-      {/* Main Elevated Modal Card (Matching reference image directly) */}
-      <div className="w-full max-w-5xl bg-white rounded-[28px] sm:rounded-[36px] shadow-[0_20px_60px_rgba(0,0,0,0.08)] overflow-hidden border border-slate-200/80 grid grid-cols-1 lg:grid-cols-12 min-h-[640px] z-10">
+      {/* ═══════════════════════════════════════════════════════════════
+          LEFT COLUMN: FULL-HEIGHT AUTHENTICATION PANEL
+         ═══════════════════════════════════════════════════════════════ */}
+      <div className="w-full lg:w-1/2 min-h-screen flex flex-col justify-between p-6 sm:p-10 md:p-14 lg:p-16 xl:p-20 bg-white relative">
+        
+        {/* Top Bar: Back to Home Link */}
+        <div className="w-full flex items-center justify-between">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors py-1.5 px-2.5 -ml-2.5 rounded-lg hover:bg-slate-100"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Home</span>
+          </Link>
+        </div>
 
-        {/* ═══════════════════════════════════════════════════════════
-            LEFT COLUMN: AUTHENTICATION FORM
-           ═══════════════════════════════════════════════════════════ */}
-        <div className="lg:col-span-6 p-7 sm:p-10 md:p-12 lg:p-14 flex flex-col justify-center">
+        {/* Center Container: Exact reference spacing & form elements */}
+        <div className="w-full max-w-[420px] mx-auto my-auto py-8">
           
-          {/* Logo Badge (Circular black circle with vortex logo glyph) */}
+          {/* Logo Badge: Solid black circle with user's vortex brand glyph */}
           <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center text-white mb-6 shadow-md">
             <BrandLogo size={24} />
           </div>
 
           {/* Heading */}
-          <h1 className="text-2xl sm:text-[26px] font-bold text-slate-900 tracking-tight mb-6">
+          <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight mb-6">
             {activeTab === TABS.LOGIN && 'Welcome back to GitFix'}
             {activeTab === TABS.SIGNUP && 'Create your GitFix account'}
             {activeTab === TABS.FORGOT && 'Reset your password'}
             {activeTab === TABS.RESET && 'Set new password'}
           </h1>
 
-          {/* Social Auth Buttons (Google & GitHub matching Google & Apple from image) */}
+          {/* Social Auth Buttons (Google & GitHub) */}
           {(activeTab === TABS.LOGIN || activeTab === TABS.SIGNUP) && (
-            <div className="space-y-2.5 mb-6">
+            <div className="space-y-3 mb-6">
               {/* Google Button */}
               <button
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="w-full py-2.5 sm:py-3 px-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all flex items-center justify-center gap-2.5 text-xs sm:text-sm font-medium text-slate-800 shadow-sm cursor-pointer disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all flex items-center justify-center gap-3 text-xs sm:text-sm font-medium text-slate-800 shadow-2xs cursor-pointer disabled:opacity-50 active:scale-[0.99]"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -209,12 +217,12 @@ function AuthForm() {
                 <span>Continue with Google</span>
               </button>
 
-              {/* GitHub Button (Clean white pill matching Apple button from image) */}
+              {/* GitHub Button */}
               <button
                 type="button"
                 onClick={handleGithubLogin}
                 disabled={loading}
-                className="w-full py-2.5 sm:py-3 px-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all flex items-center justify-center gap-2.5 text-xs sm:text-sm font-medium text-slate-800 shadow-sm cursor-pointer disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all flex items-center justify-center gap-3 text-xs sm:text-sm font-medium text-slate-800 shadow-2xs cursor-pointer disabled:opacity-50 active:scale-[0.99]"
               >
                 <Github className="w-4 h-4 text-black" />
                 <span>Continue with GitHub</span>
@@ -222,17 +230,17 @@ function AuthForm() {
             </div>
           )}
 
-          {/* Divider: "Or, sign up with your email" */}
+          {/* Divider */}
           {(activeTab === TABS.LOGIN || activeTab === TABS.SIGNUP) && (
-            <div className="relative flex items-center justify-center my-4">
+            <div className="relative flex items-center justify-center my-6">
               <div className="border-t border-slate-200 w-full" />
-              <span className="bg-white px-3 text-[11px] text-slate-400 absolute">
+              <span className="bg-white px-3 text-[11px] text-slate-400 font-medium absolute tracking-wide">
                 {activeTab === TABS.LOGIN ? 'Or, continue with your email' : 'Or, sign up with your email'}
               </span>
             </div>
           )}
 
-          {/* Notification Alert */}
+          {/* Feedback Message */}
           {message && (
             <div
               className={`p-3 rounded-xl mb-4 flex items-center gap-2 text-xs font-medium ${
@@ -241,12 +249,16 @@ function AuthForm() {
                   : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
               }`}
             >
-              {message.type === 'error' ? <AlertCircle className="w-4 h-4 shrink-0" /> : <CheckCircle2 className="w-4 h-4 shrink-0" />}
+              {message.type === 'error' ? (
+                <AlertCircle className="w-4 h-4 shrink-0" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+              )}
               <span>{message.text}</span>
             </div>
           )}
 
-          {/* Login Form */}
+          {/* Form: LOGIN */}
           {activeTab === TABS.LOGIN && (
             <form onSubmit={handleEmailLogin} className="space-y-4">
               <div>
@@ -279,33 +291,33 @@ function AuthForm() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <div className="flex justify-end mt-1.5">
+                <div className="flex justify-end mt-2">
                   <button
                     type="button"
                     onClick={() => { setActiveTab(TABS.FORGOT); setMessage(null); }}
-                    className="text-xs text-slate-500 hover:text-black font-medium transition-colors"
+                    className="text-xs text-slate-500 hover:text-black font-medium transition-colors cursor-pointer"
                   >
                     Forgot Password?
                   </button>
                 </div>
               </div>
 
-              {/* Continue Solid Black Button */}
+              {/* Solid Black Continue Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-black hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm transition-all shadow-md active:scale-[0.99] cursor-pointer mt-3 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-black hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm transition-all shadow-sm active:scale-[0.99] cursor-pointer mt-3 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : 'Continue'}
               </button>
 
-              <div className="text-center text-xs text-slate-500 mt-4">
-                Don't have an account ?{' '}
+              <div className="text-center text-xs text-slate-500 mt-5">
+                Don&apos;t have an account ?{' '}
                 <button
                   type="button"
                   onClick={() => { setActiveTab(TABS.SIGNUP); setMessage(null); }}
@@ -317,11 +329,11 @@ function AuthForm() {
             </form>
           )}
 
-          {/* Signup Form */}
+          {/* Form: SIGN UP */}
           {activeTab === TABS.SIGNUP && (
-            <form onSubmit={handleEmailSignup} className="space-y-3.5">
+            <form onSubmit={handleEmailSignup} className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-slate-800 mb-1 block">Full Name</label>
+                <label className="text-xs font-semibold text-slate-800 mb-1.5 block">Full Name</label>
                 <div className="relative">
                   <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
                   <input
@@ -329,14 +341,14 @@ function AuthForm() {
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Ada Lovelace"
-                    className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                    placeholder="Jane Doe"
+                    className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-800 mb-1 block">Email</label>
+                <label className="text-xs font-semibold text-slate-800 mb-1.5 block">Email</label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
                   <input
@@ -345,13 +357,13 @@ function AuthForm() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@company.com"
-                    className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                    className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-800 mb-1 block">Password</label>
+                <label className="text-xs font-semibold text-slate-800 mb-1.5 block">Password</label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
                   <input
@@ -360,12 +372,12 @@ function AuthForm() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="At least 6 characters"
-                    className="w-full rounded-xl border border-slate-200 pl-10 pr-10 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                    className="w-full rounded-xl border border-slate-200 pl-10 pr-10 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -373,16 +385,16 @@ function AuthForm() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-800 mb-1 block">Confirm Password</label>
+                <label className="text-xs font-semibold text-slate-800 mb-1.5 block">Confirm Password</label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
                   <input
-                    type={showPassword ? 'text' : 'password'}
+                    type="password"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Repeat password"
-                    className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                    className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
                   />
                 </div>
               </div>
@@ -390,12 +402,12 @@ function AuthForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-black hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm transition-all shadow-md active:scale-[0.99] cursor-pointer mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-black hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm transition-all shadow-sm active:scale-[0.99] cursor-pointer mt-3 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : 'Create Account'}
               </button>
 
-              <div className="text-center text-xs text-slate-500 mt-3">
+              <div className="text-center text-xs text-slate-500 mt-5">
                 Already have an account ?{' '}
                 <button
                   type="button"
@@ -408,11 +420,11 @@ function AuthForm() {
             </form>
           )}
 
-          {/* Forgot Password */}
+          {/* Form: FORGOT PASSWORD */}
           {activeTab === TABS.FORGOT && (
             <form onSubmit={handleForgotPassword} className="space-y-4">
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Enter your registered email address to receive a password reset link.
+              <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+                Enter your account email and we&apos;ll send you a link to reset your password.
               </p>
               <div>
                 <label className="text-xs font-semibold text-slate-800 mb-1.5 block">Email</label>
@@ -424,7 +436,7 @@ function AuthForm() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@company.com"
-                    className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                    className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
                   />
                 </div>
               </div>
@@ -432,16 +444,17 @@ function AuthForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-black hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm transition-all shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-black hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm transition-all shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : 'Send Reset Link'}
               </button>
 
-              <div className="text-center">
+              <div className="text-center text-xs text-slate-500 mt-5">
+                Remember your password?{' '}
                 <button
                   type="button"
                   onClick={() => { setActiveTab(TABS.LOGIN); setMessage(null); }}
-                  className="text-xs text-slate-500 hover:text-black font-semibold cursor-pointer"
+                  className="font-bold text-slate-900 hover:underline cursor-pointer"
                 >
                   Back to Sign In
                 </button>
@@ -449,7 +462,7 @@ function AuthForm() {
             </form>
           )}
 
-          {/* Reset Password */}
+          {/* Form: RESET PASSWORD */}
           {activeTab === TABS.RESET && (
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div>
@@ -462,7 +475,7 @@ function AuthForm() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="At least 6 characters"
-                    className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                    className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
                   />
                 </div>
               </div>
@@ -477,7 +490,7 @@ function AuthForm() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Repeat password"
-                    className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                    className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
                   />
                 </div>
               </div>
@@ -485,7 +498,7 @@ function AuthForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-black hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm transition-all shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-black hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm transition-all shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : 'Update Password'}
               </button>
@@ -494,69 +507,114 @@ function AuthForm() {
 
         </div>
 
-        {/* ═══════════════════════════════════════════════════════════
-            RIGHT COLUMN: DECORATIVE APP PREVIEW PANEL (Matching image)
-           ═══════════════════════════════════════════════════════════ */}
-        <div className="hidden lg:flex lg:col-span-6 relative overflow-hidden bg-gradient-to-br from-[#f2c6b0] via-[#dc9e83] to-[#c78467] p-8 pt-12 flex-col justify-end">
-          
-          {/* Subtle Ambient Silk Glow */}
-          <div className="absolute top-10 right-10 w-72 h-72 rounded-full bg-white/20 blur-3xl pointer-events-none" />
-          <div className="absolute bottom-10 left-10 w-80 h-80 rounded-full bg-orange-200/20 blur-3xl pointer-events-none" />
+        {/* Bottom Footer Note */}
+        <div className="w-full text-center lg:text-left text-[11px] text-slate-400">
+          GitFix Platform &bull; Autonomous Code Intelligence
+        </div>
 
-          {/* Floating Application Preview Card (Directly mirrors Quantro card in image) */}
-          <div className="relative w-full ml-auto rounded-tl-[24px] rounded-bl-[12px] bg-white shadow-[-20px_20px_50px_rgba(0,0,0,0.15)] border-t border-l border-white/80 p-6 flex flex-col min-h-[460px]">
-            
-            {/* Header: Logo badge + GitFix brand */}
-            <div className="flex items-center gap-2.5 pb-4 border-b border-slate-100">
-              <div className="w-7 h-7 rounded-full bg-black flex items-center justify-center text-white shrink-0">
-                <BrandLogo size={16} />
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          RIGHT COLUMN: FULL-HEIGHT LIQUID GLASS SHOWCASE
+         ═══════════════════════════════════════════════════════════════ */}
+      <div className="hidden lg:flex lg:w-1/2 min-h-screen relative overflow-hidden items-center justify-center p-8 xl:p-14 bg-[#dfa891]">
+        
+        {/* Real 3D Liquid Glass Background Image */}
+        <Image
+          src="/liquid_glass.jpg"
+          alt="Liquid Glass Ambient Art"
+          fill
+          priority
+          sizes="50vw"
+          className="object-cover object-center scale-105"
+        />
+
+        {/* Soft Ambient Refractive Lighting Blobs */}
+        <div className="absolute -top-16 -right-16 w-96 h-96 rounded-full bg-white/30 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-96 h-96 rounded-full bg-orange-300/25 blur-3xl pointer-events-none" />
+
+        {/* Floating Liquid Glassmorphic Card (Translucent & Frosted Glass) */}
+        <div className="relative w-full max-w-[430px] rounded-[32px] bg-white/20 backdrop-blur-2xl border border-white/45 shadow-[0_24px_50px_rgba(0,0,0,0.14),inset_0_1px_1px_rgba(255,255,255,0.75)] p-7 flex flex-col min-h-[460px] text-slate-900 transition-all">
+          
+          {/* Glass Specular Reflection Sheen */}
+          <div className="absolute inset-0 rounded-[32px] bg-gradient-to-b from-white/30 via-white/5 to-transparent pointer-events-none" />
+
+          {/* Header: Logo Badge + Brand Title + Subtle Frosted Tag */}
+          <div className="relative flex items-center justify-between pb-5 border-b border-white/30">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white shadow-sm shrink-0">
+                <BrandLogo size={18} />
               </div>
-              <span className="font-bold text-slate-900 text-sm tracking-tight">
+              <span className="font-bold text-slate-900 text-base tracking-tight drop-shadow-2xs">
                 GitFix
               </span>
             </div>
+            
+            {/* Subtle frosted glass badge */}
+            <div className="px-2.5 py-1 rounded-full bg-white/35 backdrop-blur-md border border-white/50 text-[11px] font-semibold text-slate-800 shadow-2xs flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3 text-slate-700" />
+              <span>Studio</span>
+            </div>
+          </div>
 
-            {/* Mockup Search Bar (Search... ⌘F) */}
-            <div className="mt-4 p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center justify-between text-xs text-slate-400">
-              <div className="flex items-center gap-2">
-                <Search className="w-3.5 h-3.5 text-slate-400" />
-                <span className="text-slate-400 font-normal">Search...</span>
-              </div>
-              <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-mono text-slate-400 shadow-2xs">
-                ⌘ F
-              </kbd>
+          {/* Liquid Glass Search Bar */}
+          <div className="relative mt-5 p-3 rounded-2xl bg-white/30 backdrop-blur-xl border border-white/50 flex items-center justify-between text-xs text-slate-600 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <Search className="w-4 h-4 text-slate-600/80" />
+              <span className="text-slate-600 font-medium">Search...</span>
+            </div>
+            <kbd className="px-2 py-0.5 rounded-lg bg-white/50 border border-white/60 text-[10px] font-mono font-semibold text-slate-700 shadow-2xs">
+              ⌘ F
+            </kbd>
+          </div>
+
+          {/* Menu Skeleton Rows with Glass Transparency */}
+          <div className="relative mt-6 space-y-3.5">
+            <div className="text-[11px] font-bold text-slate-700/80 uppercase tracking-wider px-1">
+              Menu
             </div>
 
-            {/* Menu Skeleton Rows (Directly matching the image) */}
-            <div className="mt-6 space-y-4">
-              <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                Menu
+            {/* Translucent pill items showcasing transparent depth */}
+            {[
+              { w: 'w-28', active: true },
+              { w: 'w-36', active: false },
+              { w: 'w-24', active: false },
+              { w: 'w-40', active: false },
+              { w: 'w-20', active: false },
+            ].map((row, idx) => (
+              <div
+                key={idx}
+                className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${
+                  row.active
+                    ? 'bg-white/40 backdrop-blur-lg border border-white/60 shadow-2xs'
+                    : 'hover:bg-white/20'
+                }`}
+              >
+                <div
+                  className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                    row.active ? 'bg-slate-900 shadow-2xs' : 'bg-slate-700/30'
+                  }`}
+                />
+                <div
+                  className={`h-2.5 rounded-full ${row.w} ${
+                    row.active ? 'bg-slate-900/60' : 'bg-slate-700/20'
+                  }`}
+                />
               </div>
+            ))}
+          </div>
 
-              {/* 5 Skeleton Pill Rows */}
-              {[
-                { w: 'w-24' },
-                { w: 'w-32' },
-                { w: 'w-28' },
-                { w: 'w-36' },
-                { w: 'w-20' },
-                { w: 'w-30' },
-              ].map((row, idx) => (
-                <div key={idx} className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-slate-200 shrink-0" />
-                  <div className={`h-2 rounded-full bg-slate-100 ${row.w}`} />
-                </div>
-              ))}
-            </div>
-
-            {/* Subtle floating badge */}
-            <div className="mt-auto pt-6 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-              <span>Ready for CI/CD</span>
-              <span className="text-emerald-600 font-semibold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
+          {/* Subtle Frosted Accent Bottom Card */}
+          <div className="relative mt-auto pt-4">
+            <div className="p-3.5 rounded-2xl bg-white/30 backdrop-blur-xl border border-white/45 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-2 h-2 rounded-full bg-slate-900" />
+                <span className="text-xs font-semibold text-slate-800">Auto Diagnostics</span>
+              </div>
+              <span className="text-[11px] font-mono text-slate-600 bg-white/40 px-2 py-0.5 rounded-md border border-white/50">
+                Active
               </span>
             </div>
-
           </div>
 
         </div>
@@ -569,11 +627,13 @@ function AuthForm() {
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-[#eef1f6] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-black animate-spin" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-black animate-spin" />
+        </div>
+      }
+    >
       <AuthForm />
     </Suspense>
   );
