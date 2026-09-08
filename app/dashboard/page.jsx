@@ -2,10 +2,28 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import {
-  ArrowRight, Terminal, Github, Link as LinkIcon,
-  Loader2, User, RefreshCw, Unplug, CheckCircle2, AlertCircle,
-  MessageSquare, Eye, Pencil, Package, Palette, Lock, Bot
+  ArrowRight,
+  Terminal,
+  Github,
+  Link as LinkIcon,
+  Loader2,
+  User,
+  RefreshCw,
+  Unplug,
+  CheckCircle2,
+  AlertCircle,
+  MessageSquare,
+  Eye,
+  Pencil,
+  Package,
+  Palette,
+  Lock,
+  Cpu,
+  Sparkles,
+  GitBranch,
+  ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/components/Navbar';
@@ -15,7 +33,7 @@ import RepoList from '@/components/RepoList';
 function DashboardContent() {
   const [repos, setRepos] = useState([]);
   const [repoUrl, setRepoUrl] = useState('');
-  const [commitMsg, setCommitMsg] = useState('Fixed {issues_count} issues in {files_changed} files — score {score}/100');
+  const [commitMsg, setCommitMsg] = useState('fix(gitfix): healed {issues_count} issues in {files_changed} files • score {score}/100');
   const [autoFix, setAutoFix] = useState({ syntax: true, imports: true, formatting: true, security: false });
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
@@ -31,7 +49,6 @@ function DashboardContent() {
     const processGithubCallback = async () => {
       const code = searchParams.get('code');
 
-      // If there's an OAuth code in the URL, exchange it for a token
       if (code && !oauthProcessed.current) {
         oauthProcessed.current = true;
         setLoading(true);
@@ -75,7 +92,6 @@ function DashboardContent() {
         return;
       }
 
-      // No code in URL — check if we already have a stored GitHub token
       const storedToken = localStorage.getItem('github_access_token');
       const storedUser = localStorage.getItem('github_user');
 
@@ -176,111 +192,145 @@ function DashboardContent() {
 
   return (
     <ProtectedRoute>
-      <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8 pb-12">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-white/5 pb-4 md:pb-6">
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold tracking-tight mb-0.5 text-white">Mission Control</h1>
-              <p className="text-secondary text-xs md:text-sm">Select a target for autonomous remediation.</p>
+      <div className="min-h-screen bg-black text-white selection:bg-emerald-400 selection:text-black">
+        <Navbar />
+
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
+          
+          {/* ═══════════════════════════════════════════════════════════
+              MISSION CONTROL HERO BANNER (Directly matching theme)
+             ═══════════════════════════════════════════════════════════ */}
+          <div className="relative rounded-3xl bg-gradient-to-br from-[#073f27] via-[#08472c] to-[#052b1a] border-2 border-emerald-500/30 p-6 sm:p-8 md:p-10 shadow-2xl overflow-hidden">
+            
+            {/* Ambient Radiance */}
+            <div className="absolute -top-12 -right-12 w-64 h-64 bg-emerald-400/15 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Retro PC Sticker floating on top right */}
+            <div className="absolute top-4 right-4 sm:top-6 sm:right-8 opacity-80 sm:opacity-100 hover:scale-105 transition-transform pointer-events-none">
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)]">
+                <Image
+                  src="/ui/asset/sticker_pc.png"
+                  alt="Retro PC Workstation"
+                  fill
+                  className="object-contain"
+                />
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Auth info badge */}
-              {userName && (
-                <div className="flex items-center gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-white/5 rounded-full border border-white/10 text-xs text-white" title={userName}>
-                  {userAvatar ? (
-                    <img src={userAvatar} alt="" className="w-5 h-5 rounded-full ring-1 ring-white/20" />
-                  ) : (
-                    <User className="w-3.5 h-3.5" />
-                  )}
-                  <span className="hidden md:inline truncate max-w-[100px]">{userName}</span>
-                </div>
-              )}
+            <div className="relative z-10 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 border border-emerald-400/30 text-[11px] font-mono uppercase tracking-widest text-emerald-300 mb-3">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Autonomous Engine &bull; Ready</span>
+              </div>
 
-              {/* GitHub connection */}
-              {githubConnected && (
-                <div className="flex items-center gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-green-500/10 rounded-full border border-green-500/20 text-xs text-green-400" title={githubUser?.login ? `@${githubUser.login}` : 'GitHub Connected'}>
-                  <div className="relative">
-                    <Github className="w-3.5 h-3.5" />
-                    <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-[#1ae38e] leading-none mb-3">
+                Mission Control
+              </h1>
+
+              <p className="text-xs sm:text-sm text-emerald-100/85 font-medium leading-relaxed max-w-xl">
+                Select any repository to begin autonomous AST scanning, self-healing test runs, and automated Pull Request creation on GitHub.
+              </p>
+
+              {/* Status Telemetry Pills */}
+              <div className="mt-5 flex flex-wrap items-center gap-2.5 text-xs font-mono">
+                {githubConnected ? (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-emerald-500/40 text-emerald-300">
+                    <Github className="w-3.5 h-3.5 text-white" />
+                    <span>GitHub: <strong>@{githubUser?.login || 'connected'}</strong></span>
                   </div>
-                  <span className="hidden md:inline">Connected</span>
-                  {githubUser?.login && (
-                    <span className="hidden lg:inline text-green-500/60">@{githubUser.login}</span>
-                  )}
+                ) : (
+                  <button
+                    onClick={handleConnectGithub}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-sm"
+                  >
+                    <Github className="w-3.5 h-3.5" />
+                    <span>Connect GitHub Account</span>
+                  </button>
+                )}
+
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-emerald-500/30 text-emerald-200">
+                  <Cpu className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Available Targets: <strong>{repos.length}</strong></span>
                 </div>
-              )}
+              </div>
             </div>
           </div>
 
           {/* Loading Overlay */}
           {loading && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
-              <div className="text-center">
-                <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
-                <p className="text-white text-lg font-medium">{statusMsg || 'Loading...'}</p>
+              <div className="bg-[#0b131b] border-2 border-emerald-400/40 rounded-3xl p-8 text-center shadow-2xl max-w-sm">
+                <Loader2 className="w-10 h-10 text-emerald-400 animate-spin mx-auto mb-4" />
+                <p className="text-white font-mono text-sm font-bold">{statusMsg || 'Loading...'}</p>
               </div>
             </div>
           )}
 
-          {/* GitHub Connection Card - shown when GitHub is NOT connected */}
+          {/* ═══════════════════════════════════════════════════════════
+              GITHUB CONNECT PROMPT (When disconnected)
+             ═══════════════════════════════════════════════════════════ */}
           {!githubConnected && (
-            <div className="rounded-2xl bg-[#0c0e17] border border-white/[0.08] p-8 text-center shadow-2xl">
-              <div className="inline-flex p-3.5 bg-white/[0.04] border border-white/10 rounded-2xl mb-4">
+            <div className="rounded-3xl bg-[#0d141e] border border-blue-500/30 p-6 sm:p-8 shadow-xl text-center relative overflow-hidden">
+              <div className="inline-flex p-3 bg-blue-600/20 rounded-2xl border border-blue-400/30 mb-3">
                 <Github className="w-7 h-7 text-white" />
               </div>
-              <h2 className="text-xl font-semibold text-white mb-2">Connect GitHub Account</h2>
-              <p className="text-slate-400 text-xs md:text-sm max-w-lg mx-auto mb-6 leading-relaxed">
-                Connect your GitHub account to import repositories and enable automated remediation PRs.
-                Works seamlessly whether signed in with {authProvider === 'google' ? 'Google' : 'email'}.
+              <h2 className="text-xl font-black uppercase text-white tracking-tight mb-2">
+                Connect GitHub for 1-Click Auto-PRs
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto mb-6 leading-relaxed">
+                Connect your GitHub account to import your repositories and allow GitFix to open verified, ready-to-merge Pull Requests automatically.
               </p>
               <button
                 onClick={handleConnectGithub}
-                className="inline-flex items-center gap-2.5 bg-white text-black font-semibold text-xs md:text-sm px-6 py-3 rounded-xl hover:bg-slate-200 transition-all active:scale-[0.98] cursor-pointer"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-emerald-50 text-slate-950 font-black text-xs uppercase tracking-wider shadow-md transition-all active:scale-95 cursor-pointer"
               >
                 <Github className="w-4 h-4" />
-                Connect GitHub
+                <span>Authorize GitHub Account</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           )}
 
-          {/* OR divider when not connected */}
-          {!githubConnected && (
-            <div className="flex items-center gap-4 my-2">
-              <div className="flex-1 h-px bg-white/[0.06]" />
-              <span className="text-[11px] font-mono text-slate-500 uppercase tracking-widest">or specify repository url</span>
-              <div className="flex-1 h-px bg-white/[0.06]" />
+          {/* ═══════════════════════════════════════════════════════════
+              TARGET SPECIFICATION PANEL (Physical Folder Metaphor)
+             ═══════════════════════════════════════════════════════════ */}
+          <div className="relative pt-6">
+            
+            {/* Physical Folder Tab */}
+            <div className="absolute top-0 left-6 h-7 px-5 rounded-t-2xl font-mono text-[11px] font-black uppercase tracking-wider flex items-center gap-2 bg-[#10b981] text-slate-950 shadow-sm">
+              <Terminal className="w-3.5 h-3.5" />
+              <span>Target Specification Engine</span>
             </div>
-          )}
 
-          {/* Input Configuration Panel */}
-          <div className="rounded-2xl bg-[#0c0e17] border border-white/[0.08] p-5 md:p-6 shadow-2xl">
-            <div className="space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 bg-white/[0.04] border border-white/10 rounded-lg">
-                    <Terminal className="w-4 h-4 text-lime-400" />
-                  </div>
-                  <h2 className="text-sm md:text-base font-semibold text-white">Target Configuration</h2>
+            {/* Folder Body Container */}
+            <div className="rounded-3xl bg-[#0c1219] border border-emerald-500/25 p-6 sm:p-8 shadow-2xl space-y-6">
+              
+              {/* Header Bar */}
+              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-black uppercase text-white tracking-tight">
+                    Remediation Parameters
+                  </h2>
+                  <p className="text-xs text-slate-400 font-mono mt-0.5">
+                    Configure repository target, automated commit message, and test healing passes.
+                  </p>
                 </div>
 
-                {/* GitHub actions (when connected) */}
                 {githubConnected && (
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={handleRefreshRepos}
                       disabled={loading}
-                      className="flex items-center gap-1.5 bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg border border-white/[0.08] transition-colors text-xs cursor-pointer font-mono"
-                      title="Refresh Repos"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono transition-colors cursor-pointer"
+                      title="Refresh Repositories"
                     >
                       <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
                       <span>Refresh</span>
                     </button>
+
                     <button
                       onClick={handleDisconnectGithub}
-                      className="flex items-center gap-1.5 text-slate-400 hover:text-rose-400 px-2.5 py-1.5 rounded-lg hover:bg-white/[0.03] transition-colors text-xs cursor-pointer font-mono"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/60 hover:text-rose-300 text-slate-400 text-xs font-mono transition-colors cursor-pointer"
                       title="Disconnect GitHub"
                     >
                       <Unplug className="w-3 h-3" />
@@ -290,138 +340,141 @@ function DashboardContent() {
                 )}
               </div>
 
-              <div className="space-y-4">
-                <div className="relative group">
-                  <label className="text-[10px] md:text-xs font-mono text-slate-400 uppercase mb-1.5 block">
-                    Git Repository URL
+              {/* Form Inputs */}
+              <div className="space-y-5">
+                
+                {/* Repo URL Input */}
+                <div>
+                  <label className="text-xs font-mono uppercase font-bold text-slate-300 mb-2 flex items-center justify-between">
+                    <span>Git Repository Target</span>
+                    <span className="text-[11px] text-emerald-400 font-normal">Click a repo below or enter custom URL</span>
                   </label>
                   <div className="relative">
-                    <LinkIcon className="absolute left-3.5 top-3 w-3.5 h-3.5 text-slate-500 group-focus-within:text-white transition-colors" />
+                    <LinkIcon className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5 pointer-events-none" />
                     <input
                       type="text"
-                      placeholder="https://github.com/username/repository"
-                      className="w-full bg-[#131622] border border-white/[0.08] rounded-xl pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-white/25 transition-all font-mono text-xs md:text-sm"
+                      placeholder="https://github.com/organization/repository"
                       value={repoUrl}
                       onChange={(e) => setRepoUrl(e.target.value)}
+                      className="w-full bg-[#111927] border border-slate-700 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 font-mono focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors"
                     />
                   </div>
                 </div>
 
                 {/* Commit Message Template */}
-                <div className="relative group">
-                  <label className="text-[10px] md:text-xs font-mono text-slate-400 uppercase mb-1.5 flex items-center gap-1.5">
-                    <MessageSquare className="w-3 h-3" /> Automated PR Commit Message
+                <div>
+                  <label className="text-xs font-mono uppercase font-bold text-slate-300 mb-2 flex items-center gap-2">
+                    <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Automated PR Commit Message Template</span>
                   </label>
                   <input
                     type="text"
-                    placeholder="Fixed {issues_count} issues by GitFixAI"
-                    className="w-full bg-[#131622] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-white/25 transition-all text-xs md:text-sm font-mono"
                     value={commitMsg}
                     onChange={(e) => setCommitMsg(e.target.value)}
+                    placeholder="fix(gitfix): healed {issues_count} issues in {files_changed} files"
+                    className="w-full bg-[#111927] border border-slate-700 rounded-2xl px-4 py-3 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors"
                   />
-                  <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-mono text-slate-500">
-                    <Eye className="w-3 h-3" />
-                    <span className="truncate">Preview: {commitMsg.replace('{issues_count}', '12').replace('{files_changed}', '5').replace('{score}', '94')}</span>
+                  <div className="flex items-center gap-1.5 mt-2 text-[11px] font-mono text-slate-400">
+                    <Eye className="w-3 h-3 text-slate-500" />
+                    <span className="truncate">
+                      Preview: {commitMsg.replace('{issues_count}', '8').replace('{files_changed}', '3').replace('{score}', '98')}
+                    </span>
                   </div>
                 </div>
 
-                {/* Auto-Fix Preferences */}
+                {/* Remediation Passes Toggles */}
                 <div>
-                  <label className="text-[10px] md:text-xs font-mono text-slate-400 uppercase mb-2 block">
-                    Remediation Passes
+                  <label className="text-xs font-mono uppercase font-bold text-slate-300 mb-3 block">
+                    Remediation Passes Enabled
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
-                      { key: 'syntax', label: 'Syntax AST', icon: <Pencil className="w-3.5 h-3.5" /> },
-                      { key: 'imports', label: 'Imports', icon: <Package className="w-3.5 h-3.5" /> },
-                      { key: 'formatting', label: 'Formatting', icon: <Palette className="w-3.5 h-3.5" /> },
-                      { key: 'security', label: 'Security', icon: <Lock className="w-3.5 h-3.5" /> },
-                    ].map(({ key, label, icon }) => (
+                      { key: 'syntax', label: 'Syntax AST', color: 'border-blue-500/40 bg-blue-950/30 text-blue-300', icon: <Pencil className="w-3.5 h-3.5" /> },
+                      { key: 'imports', label: 'Imports Fixer', color: 'border-emerald-500/40 bg-emerald-950/30 text-emerald-300', icon: <Package className="w-3.5 h-3.5" /> },
+                      { key: 'formatting', label: 'Formatter', color: 'border-orange-500/40 bg-orange-950/30 text-orange-300', icon: <Palette className="w-3.5 h-3.5" /> },
+                      { key: 'security', label: 'Security Guard', color: 'border-pink-500/40 bg-pink-950/30 text-pink-300', icon: <ShieldCheck className="w-3.5 h-3.5" /> },
+                    ].map(({ key, label, color, icon }) => (
                       <button
                         key={key}
                         type="button"
                         onClick={() => setAutoFix(prev => ({ ...prev, [key]: !prev[key] }))}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
+                        className={`flex items-center justify-between p-3 rounded-2xl border text-xs font-mono font-bold transition-all cursor-pointer ${
                           autoFix[key]
-                            ? 'bg-lime-400/10 border-lime-400/30 text-lime-300'
-                            : 'bg-white/[0.02] border-white/[0.07] text-slate-400 hover:bg-white/[0.05]'
+                            ? `${color} shadow-sm`
+                            : 'border-slate-800 bg-slate-900/40 text-slate-500 hover:text-slate-300'
                         }`}
                       >
-                        <span className="opacity-80">{icon}</span>
-                        <span>{label}</span>
-                        <div className={`ml-auto w-2.5 h-2.5 rounded-full transition-colors ${autoFix[key] ? 'bg-lime-400' : 'bg-white/10'}`} />
+                        <div className="flex items-center gap-2">
+                          {icon}
+                          <span>{label}</span>
+                        </div>
+                        <div className={`w-3 h-3 rounded-full transition-colors ${autoFix[key] ? 'bg-emerald-400 shadow-xs' : 'bg-slate-700'}`} />
                       </button>
                     ))}
                   </div>
                 </div>
+
               </div>
 
-              <div className="border-t border-white/[0.06] pt-4">
+              {/* Action Button */}
+              <div className="pt-4 border-t border-slate-800">
                 <button
                   onClick={startAnalysis}
-                  className="w-full bg-white text-black hover:bg-slate-200 font-semibold rounded-xl py-3 transition-all active:scale-[0.99] flex items-center justify-center gap-2 text-xs md:text-sm cursor-pointer shadow-lg"
+                  className="w-full py-4 sm:py-4.5 rounded-2xl bg-[#b2f540] hover:bg-[#a1e52f] text-slate-950 font-black text-sm sm:text-base uppercase tracking-wider border-2 border-black shadow-[4px_4px_0px_#000] hover:shadow-[2px_2px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all active:scale-[0.99] flex items-center justify-center gap-3 cursor-pointer"
                 >
                   <span>Launch Remediation Session</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
                 {!githubConnected && (
-                  <div className="flex items-center gap-2 justify-center mt-3 text-[11px] font-mono text-amber-400/80">
+                  <div className="flex items-center gap-2 justify-center mt-3 text-[11px] font-mono text-amber-400">
                     <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                    <span>GitHub not connected — scan is read-only unless account is authenticated.</span>
+                    <span>GitHub not connected &bull; Scan will run in read-only mode unless authenticated.</span>
                   </div>
                 )}
               </div>
+
             </div>
           </div>
 
-          {/* User Repositories Grid (Previous UI Restored) */}
+          {/* ═══════════════════════════════════════════════════════════
+              REPOSITORIES LIST SECTION
+             ═══════════════════════════════════════════════════════════ */}
           {repos.length > 0 ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-secondary uppercase font-mono tracking-wider">
-                  <Github className="w-4 h-4" /> Available Targets ({repos.length})
-                </div>
-                {githubUser?.login && (
-                  <span className="text-xs text-secondary">
-                    from <span className="text-white">@{githubUser.login}</span>
-                  </span>
-                )}
-              </div>
-              <RepoList
-                repos={repos}
-                onSelect={(url) => {
-                  setRepoUrl(url);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-              />
-            </div>
+            <RepoList
+              repos={repos}
+              onSelect={(url) => {
+                setRepoUrl(url);
+                window.scrollTo({ top: 180, behavior: 'smooth' });
+              }}
+            />
           ) : (
-            <>
-              {githubConnected && !loading && (
-                <div className="text-center py-12 border border-dashed border-white/10 rounded-xl bg-white/5">
-                  <Github className="w-12 h-12 text-secondary mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium text-white mb-2">No Repositories Found</h3>
-                  <p className="text-secondary text-sm max-w-md mx-auto">
-                    We couldn't find any repositories. Try refreshing or enter a Git URL manually above.
-                  </p>
-                </div>
-              )}
-            </>
+            githubConnected && !loading && (
+              <div className="text-center py-16 border-2 border-dashed border-slate-800 rounded-3xl bg-slate-950/40">
+                <Github className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                <h3 className="text-base font-bold text-white mb-1">No Repositories Discovered</h3>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  We couldn&apos;t find any repositories on this account. Try clicking Refresh or paste a GitHub URL directly above.
+                </p>
+              </div>
+            )
           )}
-        </div>
-      </main>
+
+        </main>
+      </div>
     </ProtectedRoute>
   );
 }
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-[#050507] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-black flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+        </div>
+      }
+    >
       <DashboardContent />
     </Suspense>
   );
